@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GT M&A · CONSEPLAN · Diagnóstico de Governança</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#5CD6C7;
+  --teal-dark:#3ab5a8;
+  --teal-dim:rgba(92,214,199,.15);
+  --orange:#F77333;
+  --orange-dim:rgba(247,115,51,.12);
+  --purple:#942DD4;
+  --purple-dark:#7a22b0;
+  --purple-dim:rgba(148,45,212,.12);
+  --navy:#1B3A5C;
+  --red:#E63946;
+  --slate:#6B7280;
+  --slate-light:#9CA3AF;
+  --bg:#F0F4F8;
+  --white:#FFFFFF;
+  --border:#DDE3EC;
+  --text:#1a2533;
+  /* dark panel */
+  --dark-bg:#140824;
+  --dark-card:rgba(148,45,212,.08);
+  --dark-border:rgba(148,45,212,.2);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── MODAL SENHA ── */
+.overlay{position:fixed;inset:0;background:rgba(20,8,36,.92);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.overlay.hide{display:none}
+.pwd-card{background:var(--white);border-radius:24px;padding:2.5rem 2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 32px 80px rgba(148,45,212,.18)}
+.pwd-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1.5rem}
+.pwd-logo-bar{width:4px;height:32px;background:linear-gradient(180deg,var(--teal),var(--purple));border-radius:2px}
+.pwd-logo-text{font-size:13px;font-weight:600;color:var(--navy);line-height:1.3;text-align:left}
+.pwd-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:.3rem}
+.pwd-sub{font-size:13px;color:var(--slate);margin-bottom:1.5rem;line-height:1.5}
+.pwd-input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:16px;font-weight:600;color:var(--navy);letter-spacing:.2em;text-align:center;font-family:inherit;outline:none;transition:border .2s,box-shadow .2s}
+.pwd-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(92,214,199,.2)}
+.pwd-btn{width:100%;margin-top:.75rem;padding:13px;background:linear-gradient(135deg,var(--purple),var(--teal-dark));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity .2s}
+.pwd-btn:hover{opacity:.88}
+.pwd-err{font-size:12px;color:var(--red);margin-top:.6rem;min-height:1.2em}
+.pwd-switch{font-size:12px;color:var(--slate);margin-top:1rem;cursor:pointer;text-decoration:underline}
+.pwd-switch:hover{color:var(--purple)}
+
+/* ── LAYOUT PRINCIPAL ── */
+.app{display:none;min-height:100vh}
+.app.show{display:flex}
+
+/* SIDEBAR — gradiente roxo→turquesa */
+.sidebar{width:260px;min-height:100vh;background:linear-gradient(180deg,#2a0a4a 0%,#0e3a4a 100%);padding:2rem 1.5rem;position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:10}
+.sidebar-logo{display:flex;align-items:center;gap:8px;margin-bottom:2.5rem}
+.sidebar-bar{width:3px;height:28px;background:linear-gradient(180deg,var(--orange),var(--teal));border-radius:2px}
+.sidebar-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.9);line-height:1.4}
+.sidebar-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+.steps{flex:1;display:flex;flex-direction:column;gap:4px}
+.step{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;cursor:default;transition:background .2s}
+.step.done:hover{background:rgba(255,255,255,.15)}
+.step.active{background:rgba(255,255,255,.1)}
+.step-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);flex-shrink:0;transition:all .2s}
+.step.active .step-num{background:var(--teal);color:#0e3a4a;font-weight:800}
+.step.done .step-num{background:var(--purple);color:#fff}
+.step-label{font-size:12px;color:rgba(255,255,255,.4);line-height:1.4;padding-top:5px;transition:color .2s}
+.step.active .step-label{color:#fff;font-weight:600}
+.step.done .step-label{color:rgba(255,255,255,.6)}
+.sidebar-foot{font-size:11px;color:rgba(255,255,255,.2);line-height:1.6;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.08)}
+
+/* MAIN CONTENT */
+.main{margin-left:260px;flex:1;padding:3rem 2.5rem;max-width:820px}
+.ident-bar{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:.85rem 1.25rem;margin-bottom:2rem;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--slate);box-shadow:0 1px 4px rgba(148,45,212,.06)}
+.ident-name{font-weight:700;color:var(--purple);font-size:14px}
+.ident-state{background:var(--teal-dim);padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;color:var(--teal-dark);border:1px solid rgba(92,214,199,.3)}
+
+/* BARRA DE PROGRESSO */
+.prog-bar-wrap{margin-bottom:2.5rem}
+.prog-info{display:flex;justify-content:space-between;font-size:12px;color:var(--slate);margin-bottom:.5rem}
+.prog-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--teal));border-radius:3px;transition:width .5s ease}
+
+/* BLOCO DE PERGUNTA */
+.block{display:none}
+.block.active{display:block}
+.block-header{margin-bottom:2rem;padding:1.5rem;border-radius:16px;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.05)}
+.block-eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem}
+.eyebrow-1{color:var(--purple)}
+.eyebrow-2{color:var(--teal-dark)}
+.eyebrow-3{color:var(--orange)}
+.eyebrow-4{color:var(--purple)}
+.eyebrow-5{color:var(--teal-dark)}
+.block-q{font-size:22px;font-weight:700;color:var(--navy);line-height:1.4;margin-bottom:.4rem}
+.block-desc{font-size:13px;color:var(--slate);line-height:1.6}
+
+/* OPÇÕES RADIO — modelos de países */
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin-bottom:1.5rem}
+.model-card{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;cursor:pointer;transition:all .18s;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.model-card:hover{border-color:var(--teal);background:rgba(92,214,199,.06);transform:translateY(-2px);box-shadow:0 4px 16px rgba(92,214,199,.15)}
+.model-card.sel{border-color:var(--teal);background:rgba(92,214,199,.1);box-shadow:0 0 0 3px rgba(92,214,199,.2)}
+.model-card input{position:absolute;opacity:0;width:0;height:0}
+.model-flag{font-size:26px;margin-bottom:.5rem}
+.model-name{font-size:14px;font-weight:700;color:var(--navy)}
+.model-tag{font-size:11px;color:var(--slate);margin-top:3px;line-height:1.4}
+.model-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .18s}
+.model-card.sel .model-check{background:var(--teal);border-color:var(--teal-dark)}
+.model-card.sel .model-check::after{content:'✓';font-size:11px;color:#0e3a4a;font-weight:800}
+
+/* RADIO SIMPLES */
+.radio-row{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem}
+.r-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--white);border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .18s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.r-opt:hover{border-color:var(--teal);background:rgba(92,214,199,.05);transform:translateX(3px)}
+.r-opt.sel{border-color:var(--purple);background:var(--purple-dim);box-shadow:0 0 0 3px rgba(148,45,212,.1)}
+.r-opt input{display:none}
+.r-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.r-opt.sel .r-dot{border-color:var(--purple);background:var(--purple)}
+.r-opt.sel .r-dot::after{content:'';width:6px;height:6px;background:#fff;border-radius:50%}
+.r-label{font-size:14px;color:var(--text);font-weight:500}
+.r-opt.sel .r-label{color:var(--purple-dark);font-weight:600}
+
+/* CAMPOS DE TEXTO */
+.field-wrap{margin-bottom:1.25rem}
+.field-label{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:.4rem;display:block}
+.field-sub{font-size:12px;color:var(--slate);margin-bottom:.5rem;line-height:1.5}
+.field-ta{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);resize:vertical;min-height:90px;outline:none;transition:border .2s,box-shadow .2s;background:var(--white);line-height:1.6}
+.field-ta:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(92,214,199,.18)}
+.field-ta.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(230,57,70,.12)}
+.field-in{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border .2s,box-shadow .2s;background:var(--white)}
+.field-in:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(92,214,199,.18)}
+.field-in.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(230,57,70,.12)}
+
+/* DIVISOR entre radio e open fields */
+.section-divider{height:1px;background:linear-gradient(90deg,var(--teal-dim),transparent);margin:1.5rem 0}
+
+/* ALERTA VALIDAÇÃO — laranja faz sentido aqui (atenção) */
+.val-alert{display:none;background:#fff3ed;border:1.5px solid var(--orange);border-radius:10px;padding:.85rem 1rem;margin-bottom:1.25rem;font-size:13px;color:#7a3200;line-height:1.5}
+.val-alert.show{display:block}
+.val-alert strong{display:block;margin-bottom:.3rem;color:var(--orange);font-size:14px}
+
+/* BOTÕES DE NAVEGAÇÃO */
+.nav-row{display:flex;justify-content:flex-end;margin-top:1.75rem;gap:.75rem}
+.btn-adv{padding:13px 2rem;background:var(--teal);color:#0e3a4a;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(92,214,199,.35)}
+.btn-adv:hover{background:var(--teal-dark);color:#fff;box-shadow:0 6px 20px rgba(92,214,199,.4);transform:translateY(-1px)}
+.btn-back{padding:13px 1.5rem;background:transparent;color:var(--slate);border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn-back:hover{border-color:var(--purple);color:var(--purple)}
+.btn-submit{padding:13px 2rem;background:var(--purple);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(148,45,212,.35)}
+.btn-submit:hover{background:var(--purple-dark);box-shadow:0 6px 20px rgba(148,45,212,.4);transform:translateY(-1px)}
+
+/* ECRÃ INICIAL */
+.start-card{background:var(--white);border-radius:20px;padding:2.5rem 2rem;border:1px solid var(--border);max-width:560px;margin:0 auto;box-shadow:0 4px 24px rgba(148,45,212,.07)}
+.start-eyebrow{font-size:11px;font-weight:800;color:var(--purple);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem}
+.start-title{font-size:24px;font-weight:700;color:var(--navy);margin-bottom:.5rem;line-height:1.3}
+.start-desc{font-size:14px;color:var(--slate);line-height:1.7;margin-bottom:2rem}
+.start-fields{display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem}
+.start-label{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:.4rem;display:block}
+
+/* ECRÃ FINAL */
+.done-card{background:var(--white);border-radius:20px;padding:3rem 2rem;text-align:center;border:1px solid var(--border);box-shadow:0 8px 32px rgba(148,45,212,.1)}
+.done-icon{font-size:56px;margin-bottom:1rem}
+.done-title{font-size:26px;font-weight:700;color:var(--purple);margin-bottom:.5rem}
+.done-msg{font-size:15px;color:var(--slate);line-height:1.7;margin-bottom:1.5rem}
+.done-sub{font-size:13px;color:var(--slate-light)}
+.spin{width:20px;height:20px;border:2px solid rgba(92,214,199,.25);border-top-color:var(--teal);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.send-status{display:flex;align-items:center;gap:10px;justify-content:center;font-size:13px;color:var(--slate);margin-bottom:1.5rem}
+
+/* ══════════════════════════════════════
+   PAINEL FACILITADOR — tema MUVA escuro
+══════════════════════════════════════ */
+.painel{display:none;min-height:100vh;background:var(--dark-bg);color:#e8edf3}
+.painel.show{display:block}
+.painel-nav{background:rgba(148,45,212,.12);border-bottom:1px solid var(--dark-border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(10px)}
+.painel-nav-title{font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px}
+.live-dot{width:9px;height:9px;background:var(--teal);border-radius:50%;animation:pulse 1.5s ease infinite;box-shadow:0 0 6px var(--teal)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.painel-inner{max-width:1100px;margin:0 auto;padding:2rem}
+
+/* Stats com cores MUVA */
+.painel-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem}
+.stat-box{border-radius:16px;padding:1.5rem;position:relative;overflow:hidden}
+.stat-box:nth-child(1){background:rgba(92,214,199,.1);border:1px solid rgba(92,214,199,.25)}
+.stat-box:nth-child(2){background:rgba(148,45,212,.12);border:1px solid rgba(148,45,212,.3)}
+.stat-box:nth-child(3){background:rgba(247,115,51,.1);border:1px solid rgba(247,115,51,.25)}
+.stat-box:nth-child(4){background:rgba(92,214,199,.08);border:1px solid rgba(92,214,199,.2)}
+.stat-box:nth-child(1) .stat-n{color:var(--teal)}
+.stat-box:nth-child(2) .stat-n{color:#c084fc}
+.stat-box:nth-child(3) .stat-n{color:var(--orange)}
+.stat-box:nth-child(4) .stat-n{color:var(--teal)}
+.stat-n{font-size:32px;font-weight:800}
+.stat-l{font-size:12px;color:rgba(255,255,255,.45);margin-top:6px;font-weight:500}
+
+/* Filtros */
+.filter-bar{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:13px;color:#e8edf3;font-family:inherit;outline:none;transition:border .2s}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--teal)}
+.filter-bar select option{background:#1a0a2e}
+.btn-refresh{padding:8px 16px;background:rgba(92,214,199,.12);border:1px solid rgba(92,214,199,.3);color:var(--teal);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;transition:all .2s}
+.btn-refresh:hover{background:rgba(92,214,199,.25);box-shadow:0 0 12px rgba(92,214,199,.2)}
+
+/* Cards de resposta */
+.resp-list{display:flex;flex-direction:column;gap:.75rem}
+.resp-card{background:var(--dark-card);border:1px solid var(--dark-border);border-radius:16px;overflow:hidden;transition:border-color .2s}
+.resp-card:hover{border-color:rgba(148,45,212,.4)}
+.resp-head{padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:1rem;transition:background .2s}
+.resp-head:hover{background:rgba(148,45,212,.1)}
+.resp-card.open{border-color:var(--teal)}
+.resp-card.open .resp-head{background:rgba(92,214,199,.08)}
+.resp-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.resp-name{font-size:15px;font-weight:700;color:#fff}
+.resp-estado{background:rgba(92,214,199,.15);color:var(--teal);padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(92,214,199,.3)}
+.resp-ts{font-size:12px;color:rgba(255,255,255,.35)}
+.resp-modelo{font-size:12px;color:var(--orange);font-weight:600}
+.resp-toggle{font-size:16px;color:rgba(255,255,255,.3);transition:transform .2s}
+.resp-card.open .resp-toggle{transform:rotate(180deg);color:var(--teal)}
+.resp-body{display:none;padding:1.5rem;border-top:1px solid var(--dark-border)}
+.resp-card.open .resp-body{display:block}
+
+/* Blocos dentro de cada resposta */
+.q-block{margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-block-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.85rem;padding:4px 10px;border-radius:6px;display:inline-block}
+.q-block:nth-child(1) .q-block-title{background:var(--purple-dim);color:#c084fc}
+.q-block:nth-child(2) .q-block-title{background:rgba(92,214,199,.1);color:var(--teal)}
+.q-block:nth-child(3) .q-block-title{background:rgba(247,115,51,.1);color:var(--orange)}
+.q-block:nth-child(4) .q-block-title{background:var(--purple-dim);color:#c084fc}
+.q-block:nth-child(5) .q-block-title{background:rgba(92,214,199,.1);color:var(--teal)}
+.q-item{margin-bottom:.75rem}
+.q-item-label{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.q-item-val{font-size:14px;color:rgba(255,255,255,.85);line-height:1.7;background:rgba(255,255,255,.04);padding:.7rem 1rem;border-radius:8px;border-left:3px solid var(--teal);word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;max-height:180px;overflow-y:auto}
+
+.empty-state{text-align:center;padding:4rem 2rem;color:rgba(255,255,255,.2)}
+.esp{width:28px;height:28px;border:2px solid rgba(92,214,199,.15);border-top-color:var(--teal);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .75rem}
+.painel-section-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.count-badge{background:rgba(92,214,199,.15);color:var(--teal);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(92,214,199,.25)}
+
+/* RESPONSIVE */
+@media(max-width:760px){
+  .sidebar{display:none}
+  .main{margin-left:0;padding:1.5rem 1rem}
+  .model-grid{grid-template-columns:1fr 1fr}
+  .painel-stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ OVERLAY SENHA ══ -->
+<div class="overlay" id="overlay">
+  <div class="pwd-card">
+    <div class="pwd-logo">
+      <div class="pwd-logo-bar"></div>
+      <div>
+        <div class="pwd-logo-text">GT de M&A · CONSEPLAN</div>
+        <div style="font-size:11px;color:#9CA3AF">Diagnóstico de Governança 2026</div>
+      </div>
+    </div>
+    <div class="pwd-title" id="pwd-title">Bem-vindo(a)</div>
+    <div class="pwd-sub" id="pwd-sub">Insira a senha para acessar o questionário.</div>
+    <input type="password" class="pwd-input" id="pwd-input" placeholder="••••••" maxlength="20"
+           onkeydown="if(event.key==='Enter')verificarSenha()"/>
+    <button class="pwd-btn" onclick="verificarSenha()">Entrar</button>
+    <div class="pwd-err" id="pwd-err"></div>
+    <span class="pwd-switch" id="pwd-switch" onclick="toggleModo()">Sou facilitador(a) →</span>
+  </div>
+</div>
+
+<!-- ══ APP QUESTIONÁRIO ══ -->
+<div class="app" id="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-bar"></div>
+      <div>
+        <div class="sidebar-title">GT M&A · CONSEPLAN</div>
+        <div class="sidebar-sub">Diagnóstico de Governança</div>
+      </div>
+    </div>
+    <div class="steps" id="steps-nav">
+      <!-- gerado via JS -->
+    </div>
+    <div class="sidebar-foot">GT de Monitoramento e Avaliação<br>CONSEPLAN · Julho 2026</div>
+  </nav>
+
+  <!-- Conteúdo principal -->
+  <main class="main" id="main-content">
+    <!-- ecrã de identificação -->
+    <div id="bloco-ident" class="block active">
+      <div class="start-card">
+        <div class="start-eyebrow">Questionário · Governança de M&A</div>
+        <div class="start-title">Diagnóstico do sistema de M&A do seu estado</div>
+        <div class="start-desc">Este questionário recolhe a sua perspectiva sobre a governança do sistema de monitoramento e avaliação do seu estado. Suas respostas serão usadas para elaborar um roadmap personalizado de governança.<br><br>São 5 blocos temáticos. Todas as perguntas são obrigatórias. Você precisa responder cada bloco por completo antes de avançar.</div>
+        <div class="start-fields">
+          <div>
+            <label class="start-label" for="inp-nome">Seu nome completo</label>
+            <input type="text" class="field-in" id="inp-nome" placeholder="Ex.: Ana Paula Ferreira" maxlength="80"/>
+          </div>
+          <div>
+            <label class="start-label" for="inp-estado">Estado que representa</label>
+            <input type="text" class="field-in" id="inp-estado" placeholder="Ex.: Minas Gerais" maxlength="60" list="estados-list"/>
+            <datalist id="estados-list">
+              <option value="Acre"><option value="Alagoas"><option value="Amapá">
+              <option value="Amazonas"><option value="Bahia"><option value="Ceará">
+              <option value="Distrito Federal"><option value="Espírito Santo"><option value="Goiás">
+              <option value="Maranhão"><option value="Mato Grosso"><option value="Mato Grosso do Sul">
+              <option value="Minas Gerais"><option value="Pará"><option value="Paraíba">
+              <option value="Paraná"><option value="Pernambuco"><option value="Piauí">
+              <option value="Rio de Janeiro"><option value="Rio Grande do Norte"><option value="Rio Grande do Sul">
+              <option value="Rondônia"><option value="Roraima"><option value="Santa Catarina">
+              <option value="São Paulo"><option value="Sergipe"><option value="Tocantins">
+            </datalist>
+          </div>
+        </div>
+        <div class="val-alert" id="val-ident"></div>
+        <div class="nav-row">
+          <button class="btn-adv" onclick="comecar()">Iniciar questionário →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 1 -->
+    <div id="bloco-1" class="block">
+      <div class="ident-bar" id="ib-1"></div>
+      <div class="prog-bar-wrap">
+        <div class="prog-info"><span>Bloco 1 de 5 — Modelo de referência</span><span id="pp-1"></span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:20%"></div></div>
+      </div>
+      <div class="block-header">
+        <div class="block-eyebrow eyebrow-1">Pergunta 1 · Modelo de Referência</div>
+        <div class="block-q">Qual modelo apresentado se aproxima mais da realidade institucional hoje no seu estado?</div>
+        <div class="block-desc">Considere os casos do Chile, Canadá, México, Reino Unido e Niterói (SIMAGI) apresentados na palestra.</div>
+      </div>
+
+      <div class="model-grid">
+        <label class="model-card" id="mc-chile" onclick="selModel('chile')">
+          <input type="radio" name="q1_modelo" value="Chile">
+          <div class="model-check"></div>
+          <div class="model-flag">🇨🇱</div>
+          <div class="model-name">Chile</div>
+          <div class="model-tag">Centralizado · DIPRES</div>
+        </label>
+        <label class="model-card" id="mc-canada" onclick="selModel('canada')">
+          <input type="radio" name="q1_modelo" value="Canadá">
+          <div class="model-check"></div>
+          <div class="model-flag">🇨🇦</div>
+          <div class="model-name">Canadá</div>
+          <div class="model-tag">Descentralizado c/ liderança funcional</div>
+        </label>
+        <label class="model-card" id="mc-mexico" onclick="selModel('mexico')">
+          <input type="radio" name="q1_modelo" value="México">
+          <div class="model-check"></div>
+          <div class="model-flag">🇲🇽</div>
+          <div class="model-name">México</div>
+          <div class="model-tag">Híbrido por tema · CONEVAL</div>
+        </label>
+        <label class="model-card" id="mc-uk" onclick="selModel('uk')">
+          <input type="radio" name="q1_modelo" value="Reino Unido">
+          <div class="model-check"></div>
+          <div class="model-flag">🇬🇧</div>
+          <div class="model-name">Reino Unido</div>
+          <div class="model-tag">Centralizado em condições de gasto · ETF</div>
+        </label>
+        <label class="model-card" id="mc-niteroi" onclick="selModel('niteroi')">
+          <input type="radio" name="q1_modelo" value="Niterói (SIMAGI)">
+          <div class="model-check"></div>
+          <div class="model-flag">🇧🇷</div>
+          <div class="model-name">Niterói (SIMAGI)</div>
+          <div class="model-tag">Três camadas · governança horizontal</div>
+        </label>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="q1a"><span style="color:var(--purple);font-weight:800;margin-right:6px">1.1</span> Descreva a capacidade técnica do sistema de M&A do seu estado <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Considere recursos humanos, infraestrutura e competências disponíveis.</div>
+        <textarea class="field-ta" id="q1a" rows="3" placeholder="Descreva aqui..."></textarea>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label" for="q1b"><span style="color:var(--purple);font-weight:800;margin-right:6px">1.2</span> Descreva a cultura de M&A do seu estado em três palavras <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Exemplo: incipiente, técnica, colaborativa — ou outras que melhor descrevam.</div>
+        <input type="text" class="field-in" id="q1b" placeholder="Ex.: incipiente, técnica, colaborativa" maxlength="120"/>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label" for="q1c"><span style="color:var(--purple);font-weight:800;margin-right:6px">1.3</span> Como são os fluxos de avaliação? <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Quem inicia, quem executa, quem recebe os resultados?</div>
+        <textarea class="field-ta" id="q1c" rows="3" placeholder="Descreva aqui..."></textarea>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label" for="q1d"><span style="color:var(--purple);font-weight:800;margin-right:6px">1.4</span> Como se dá a conexão com o orçamento? <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Os resultados de M&A influenciam a alocação de recursos?</div>
+        <textarea class="field-ta" id="q1d" rows="3" placeholder="Descreva aqui..."></textarea>
+      </div>
+
+      <div class="val-alert" id="val-1"></div>
+      <div class="nav-row">
+        <button class="btn-adv" onclick="avancar(1)">Próximo bloco →</button>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div id="bloco-2" class="block">
+      <div class="ident-bar" id="ib-2"></div>
+      <div class="prog-bar-wrap">
+        <div class="prog-info"><span>Bloco 2 de 5 — Coordenação</span><span id="pp-2"></span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:40%"></div></div>
+      </div>
+      <div class="block-header">
+        <div class="block-eyebrow eyebrow-2">Pergunta 2 · Coordenação</div>
+        <div class="block-q">No contexto do seu estado, você sugere centralizar a coordenação ou distribuir entre secretarias com diretrizes centrais?</div>
+        <div class="block-desc">Considere a realidade institucional atual e o que seria viável construir.</div>
+      </div>
+
+      <div class="radio-row">
+        <label class="r-opt" id="ro-c" onclick="selRadio('q2_coord','Centralizar','ro-c')">
+          <input type="radio" name="q2_coord" value="Centralizar">
+          <div class="r-dot"></div>
+          <span class="r-label">Centralizar — um órgão concentra a coordenação do sistema</span>
+        </label>
+        <label class="r-opt" id="ro-d" onclick="selRadio('q2_coord','Distribuir com diretrizes centrais','ro-d')">
+          <input type="radio" name="q2_coord" value="Distribuir com diretrizes centrais">
+          <div class="r-dot"></div>
+          <span class="r-label">Distribuir — cada secretaria avalia seus programas, com diretrizes centrais</span>
+        </label>
+        <label class="r-opt" id="ro-h" onclick="selRadio('q2_coord','Modelo híbrido','ro-h')">
+          <input type="radio" name="q2_coord" value="Modelo híbrido">
+          <div class="r-dot"></div>
+          <span class="r-label">Híbrido — coordenação central para políticas prioritárias, descentralizado nas demais</span>
+        </label>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="q2a"><span style="color:var(--teal-dark);font-weight:800;margin-right:6px">2.1</span> Como será a relação entre o centro de governo e as secretarias finalísticas? <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Quem define as prioridades? Como se dá a prestação de contas?</div>
+        <textarea class="field-ta" id="q2a" rows="4" placeholder="Descreva aqui..."></textarea>
+      </div>
+
+      <div class="val-alert" id="val-2"></div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="voltar(2)">← Voltar</button>
+        <button class="btn-adv" onclick="avancar(2)">Próximo bloco →</button>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div id="bloco-3" class="block">
+      <div class="ident-bar" id="ib-3"></div>
+      <div class="prog-bar-wrap">
+        <div class="prog-info"><span>Bloco 3 de 5 — Atores e papéis</span><span id="pp-3"></span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:60%"></div></div>
+      </div>
+      <div class="block-header">
+        <div class="block-eyebrow eyebrow-3">Pergunta 3 · Atores e Papéis</div>
+        <div class="block-q">Quem tem a "caneta" (nível estratégico) e quem executa (nível operacional)?</div>
+        <div class="block-desc">Identifique as pessoas, cargos ou estruturas responsáveis pela direção e pela execução do sistema de M&A.</div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="q3a"><span style="color:var(--orange);font-weight:800;margin-right:6px">3.1</span> Descreva quem detém o poder de decisão estratégica e quem executa operacionalmente <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Exemplo: "A Secretaria de Planejamento decide, a unidade de M&A executa."</div>
+        <textarea class="field-ta" id="q3a" rows="4" placeholder="Descreva aqui..."></textarea>
+      </div>
+      <div class="field-wrap">
+        <label class="field-label" for="q3b"><span style="color:var(--orange);font-weight:800;margin-right:6px">3.2</span> Essas pessoas ou estruturas já existem ou precisam ser criadas? <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Identifique o que já existe, o que falta e o que precisaria ser formalizado.</div>
+        <textarea class="field-ta" id="q3b" rows="4" placeholder="Descreva aqui..."></textarea>
+      </div>
+
+      <div class="val-alert" id="val-3"></div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="voltar(3)">← Voltar</button>
+        <button class="btn-adv" onclick="avancar(3)">Próximo bloco →</button>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div id="bloco-4" class="block">
+      <div class="ident-bar" id="ib-4"></div>
+      <div class="prog-bar-wrap">
+        <div class="prog-info"><span>Bloco 4 de 5 — Arranjo mínimo viável</span><span id="pp-4"></span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:80%"></div></div>
+      </div>
+      <div class="block-header">
+        <div class="block-eyebrow eyebrow-4">Pergunta 4 · Arranjo Mínimo Viável</div>
+        <div class="block-q">Que primeiro arranjo mínimo viável já temos ou poderíamos propor para começar?</div>
+        <div class="block-desc">Pense no que é factível montar nos próximos 6 a 12 meses, com os recursos e estruturas disponíveis.</div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="q4a"><span style="color:var(--purple);font-weight:800;margin-right:6px">4.1</span> Quais são as principais instâncias responsáveis pela direção estratégica, coordenação técnica e execução do sistema de M&A? <span style="color:var(--red)">*</span></label>
+        <textarea class="field-ta" id="q4a" rows="3" placeholder="Descreva aqui..."></textarea>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label"><span style="color:var(--purple);font-weight:800;margin-right:6px">4.2</span> Existe um comitê ou fórum interinstitucional para deliberar sobre o plano anual de avaliação, aprovar prioridades e acompanhar recomendações? <span style="color:var(--red)">*</span></label>
+        <div class="radio-row" style="margin-bottom:.75rem">
+          <label class="r-opt" id="ro-4b-s" onclick="selRadio('q4b_comite','Sim','ro-4b-s');document.getElementById('q4b_det_wrap').style.display='block'">
+            <input type="radio" name="q4b_comite" value="Sim">
+            <div class="r-dot"></div>
+            <span class="r-label">Sim, já existe</span>
+          </label>
+          <label class="r-opt" id="ro-4b-n" onclick="selRadio('q4b_comite','Não','ro-4b-n');document.getElementById('q4b_det_wrap').style.display='block'">
+            <input type="radio" name="q4b_comite" value="Não">
+            <div class="r-dot"></div>
+            <span class="r-label">Não ainda, mas poderia ser proposto</span>
+          </label>
+          <label class="r-opt" id="ro-4b-ns" onclick="selRadio('q4b_comite','Não sei','ro-4b-ns');document.getElementById('q4b_det_wrap').style.display='block'">
+            <input type="radio" name="q4b_comite" value="Não sei">
+            <div class="r-dot"></div>
+            <span class="r-label">Não sei / Não se aplica</span>
+          </label>
+        </div>
+        <div id="q4b_det_wrap" style="display:none">
+          <textarea class="field-ta" id="q4b_det" rows="2" placeholder="Descreva brevemente (composição, frequência, mandato...)"></textarea>
+        </div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label"><span style="color:var(--purple);font-weight:800;margin-right:6px">4.3</span> As unidades executoras das políticas/programas terão a obrigação de responder às recomendações de M&A? <span style="color:var(--red)">*</span></label>
+        <div class="radio-row">
+          <label class="r-opt" id="ro-4c-s" onclick="selRadio('q4c_obrig','Sim','ro-4c-s')">
+            <input type="radio" name="q4c_obrig" value="Sim">
+            <div class="r-dot"></div>
+            <span class="r-label">Sim, haverá obrigação formal</span>
+          </label>
+          <label class="r-opt" id="ro-4c-n" onclick="selRadio('q4c_obrig','Não','ro-4c-n')">
+            <input type="radio" name="q4c_obrig" value="Não">
+            <div class="r-dot"></div>
+            <span class="r-label">Não, será voluntário / baseado em incentivos</span>
+          </label>
+          <label class="r-opt" id="ro-4c-ns" onclick="selRadio('q4c_obrig','Não sei','ro-4c-ns')">
+            <input type="radio" name="q4c_obrig" value="Não sei">
+            <div class="r-dot"></div>
+            <span class="r-label">Não sei / Ainda não decidido</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="q4d"><span style="color:var(--purple);font-weight:800;margin-right:6px">4.4</span> Como será monitorado o uso das evidências produzidas pelo sistema de M&A? <span style="color:var(--red)">*</span></label>
+        <div class="field-sub">Quais mecanismos garantirão que as avaliações sejam de fato usadas?</div>
+        <textarea class="field-ta" id="q4d" rows="3" placeholder="Descreva aqui..."></textarea>
+      </div>
+
+      <div class="val-alert" id="val-4"></div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="voltar(4)">← Voltar</button>
+        <button class="btn-adv" onclick="avancar(4)">Próximo bloco →</button>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div id="bloco-5" class="block">
+      <div class="ident-bar" id="ib-5"></div>
+      <div class="prog-bar-wrap">
+        <div class="prog-info"><span>Bloco 5 de 5 — Participação e atribuições</span><span id="pp-5"></span></div>
+        <div class="prog-track"><div class="prog-fill" style="width:100%"></div></div>
+      </div>
+      <div class="block-header">
+        <div class="block-eyebrow eyebrow-5">Pergunta 5 · Participação e Atribuições</div>
+        <div class="block-q">Como garantir que diferentes setores e níveis de governo participem da governança do sistema?</div>
+        <div class="block-desc">Reflita sobre o envolvimento intersetorial e a clareza de papéis.</div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="q5a"><span style="color:var(--teal-dark);font-weight:800;margin-right:6px">5.1</span> Quais são as estratégias para garantir clareza de atribuições entre diferentes setores e incentivos para participação e envolvimento? <span style="color:var(--red)">*</span></label>
+        <textarea class="field-ta" id="q5a" rows="4" placeholder="Descreva aqui..."></textarea>
+      </div>
+      <div class="val-alert" id="val-5"></div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="voltar(5)">← Voltar</button>
+        <button class="btn-submit" onclick="submeter()">Enviar respostas ✓</button>
+      </div>
+    </div>
+
+    <!-- ECRÃ FINAL -->
+    <div id="bloco-fim" class="block">
+      <div class="done-card">
+        <div class="done-icon">✅</div>
+        <div class="done-title">Obrigado(a) pela sua contribuição!</div>
+        <div class="done-msg">Suas respostas foram registradas com sucesso. Aguarde enquanto geramos o seu canvas de governança personalizado...</div>
+        <div class="send-status" id="send-status">
+          <div class="spin"></div>
+          <span>A registrar suas respostas...</span>
+        </div>
+        <div class="done-sub">GT de M&A · CONSEPLAN · Julho 2026</div>
+      </div>
+      <!-- ROADMAP gerado por IA -->
+      <div id="roadmap-wrap" style="display:none;margin-top:2rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem">
+          <div style="font-size:18px;font-weight:700;color:var(--navy)">🗺️ Canvas de Governança — seu estado</div>
+          <button onclick="imprimirRoadmap()" style="padding:10px 1.5rem;background:var(--purple);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 14px rgba(148,45,212,.3)">⬇ Baixar PDF</button>
+        </div>
+        <div id="roadmap-content" style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;padding:1.5rem"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ PAINEL FACILITADOR ══ -->
+<div class="painel" id="painel">
+  <nav class="painel-nav">
+    <div class="painel-nav-title">
+      <div class="live-dot"></div>
+      GT M&A · CONSEPLAN — Painel do Facilitador
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <button class="btn-refresh" onclick="carregarRespostas()">↻ Atualizar</button>
+      <button onclick="exportarCSV()" style="padding:8px 14px;background:rgba(233,196,106,.15);border:1px solid rgba(233,196,106,.3);color:#E9C46A;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer">↓ Exportar CSV</button>
+    </div>
+  </nav>
+  <div class="painel-inner">
+    <div class="painel-stats">
+      <div class="stat-box"><div class="stat-n" id="st-total">0</div><div class="stat-l">Respostas recebidas</div></div>
+      <div class="stat-box"><div class="stat-n" id="st-estados" style="color:#2A9D8F">—</div><div class="stat-l">Estados representados</div></div>
+      <div class="stat-box"><div class="stat-n" id="st-modelo" style="color:#E9C46A">—</div><div class="stat-l">Modelo mais citado</div></div>
+      <div class="stat-box"><div class="stat-n" id="st-coord" style="color:#c084fc">—</div><div class="stat-l">Coord. preferida</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" id="f-busca" placeholder="Buscar por nome ou estado..." oninput="filtrar()" style="width:220px"/>
+      <select id="f-modelo" onchange="filtrar()">
+        <option value="">Todos os modelos</option>
+        <option>Chile</option><option>Canadá</option><option>México</option>
+        <option>Reino Unido</option><option>Niterói (SIMAGI)</option>
+      </select>
+      <select id="f-coord" onchange="filtrar()">
+        <option value="">Toda coordenação</option>
+        <option>Centralizar</option>
+        <option>Distribuir com diretrizes centrais</option>
+        <option>Modelo híbrido</option>
+      </select>
+    </div>
+
+    <div class="painel-section-title">
+      Respostas individuais
+      <span class="count-badge" id="count-badge">0 resultados</span>
+    </div>
+    <div class="resp-list" id="resp-list">
+      <div class="empty-state"><div class="esp"></div>A carregar respostas...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════ */
+const SB_URL = 'https://fgciceqklgcyjdwqdtdm.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnY2ljZXFrbGdjeWpkd3FkdGRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MjY3NDIsImV4cCI6MjA5NzMwMjc0Mn0.Bn8SBzRbwwbDxL6EILKKshTZXD0S1jtLUurCCYhpa5c';
+const HDRS = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const ANTHROPIC_KEY = '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'; // substitui pelo sk-ant-...
+const SENHA_QUIZ = 'CONSEPLAN2026';
+const SENHA_FAC  = 'GTMA2026';
+
+/* ══════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════ */
+let modoFacilitador = false;
+let blocoAtual = 0; // 0 = ident
+let nome = '', estado = '';
+let radios = {}; // { campo: valor }
+let blocosCompletos = new Set();
+let respostas_cache = [];
+
+/* ══════════════════════════════════════════
+   SENHA
+══════════════════════════════════════════ */
+function toggleModo(){
+  modoFacilitador = !modoFacilitador;
+  const t = document.getElementById('pwd-title');
+  const s = document.getElementById('pwd-sub');
+  const sw = document.getElementById('pwd-switch');
+  if(modoFacilitador){
+    t.textContent = 'Acesso do Facilitador';
+    s.textContent = 'Insira a senha de facilitador para acessar o painel de respostas.';
+    sw.textContent = '← Sou participante';
+  } else {
+    t.textContent = 'Bem-vindo(a)';
+    s.textContent = 'Insira a senha para acessar o questionário.';
+    sw.textContent = 'Sou facilitador(a) →';
+  }
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-err').textContent = '';
+}
+
+function verificarSenha(){
+  const v = document.getElementById('pwd-input').value.trim().toUpperCase();
+  if(!modoFacilitador && v === SENHA_QUIZ){
+    document.getElementById('overlay').classList.add('hide');
+    document.getElementById('app').classList.add('show');
+    renderSidebar();
+    return;
+  }
+  if(modoFacilitador && v === SENHA_FAC){
+    document.getElementById('overlay').classList.add('hide');
+    document.getElementById('painel').classList.add('show');
+    carregarRespostas();
+    iniciarPolling();
+    return;
+  }
+  document.getElementById('pwd-err').textContent = 'Senha incorreta. Tente novamente.';
+  document.getElementById('pwd-input').value = '';
+  setTimeout(()=>document.getElementById('pwd-err').textContent='', 2500);
+}
+document.getElementById('pwd-input').addEventListener('keydown', e=>{if(e.key==='Enter')verificarSenha();});
+
+/* ══════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════ */
+const STEPS = [
+  {n:1, label:'Modelo de referência'},
+  {n:2, label:'Coordenação'},
+  {n:3, label:'Atores e papéis'},
+  {n:4, label:'Arranjo mínimo viável'},
+  {n:5, label:'Participação e atribuições'},
+];
+
+function renderSidebar(){
+  const nav = document.getElementById('steps-nav');
+  nav.innerHTML = STEPS.map(s=>`
+    <div class="step ${blocoAtual===s.n?'active':blocoAtual>s.n?'done':''}" id="step-${s.n}">
+      <div class="step-num">${blocoAtual>s.n?'✓':s.n}</div>
+      <div class="step-label">${s.label}</div>
+    </div>`).join('');
+}
+
+function atualizarSidebar(atual){
+  // Marcar todos os blocos anteriores ao máximo já atingido como completos
+  for(let i=1; i<atual; i++) blocosCompletos.add(i);
+  STEPS.forEach(s=>{
+    const el = document.getElementById('step-'+s.n);
+    if(!el) return;
+    const isDone = blocosCompletos.has(s.n) && s.n !== atual;
+    const isActive = s.n === atual;
+    el.className = 'step '+(isActive?'active':isDone?'done':'');
+    el.querySelector('.step-num').textContent = isDone?'✓':s.n;
+    // clicável apenas em blocos já concluídos
+    if(isDone){
+      el.style.cursor='pointer';
+      el.onclick = ()=>{ mostrarBloco(s.n); };
+    } else {
+      el.style.cursor='default';
+      el.onclick = null;
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   IDENTIFICAÇÃO
+══════════════════════════════════════════ */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function setIdentBar(n){
+  const el = document.getElementById('ib-'+n);
+  if(el) el.innerHTML = `<span>📍</span><span class="ident-name">${esc(nome)}</span><span class="ident-state">${esc(estado)}</span>`;
+}
+
+function comecar(){
+  const n = document.getElementById('inp-nome').value.trim();
+  const e = document.getElementById('inp-estado').value.trim();
+  const v = document.getElementById('val-ident');
+  if(!n || !e){
+    v.classList.add('show');
+    v.innerHTML = '<strong>⚠ Campo obrigatório não preenchido</strong>Por favor, informe seu nome completo e o estado que representa.';
+    if(!n) document.getElementById('inp-nome').classList.add('err');
+    if(!e) document.getElementById('inp-estado').classList.add('err');
+    return;
+  }
+  nome = n; estado = e;
+  v.classList.remove('show');
+  mostrarBloco(1);
+}
+document.getElementById('inp-nome').addEventListener('input',()=>{document.getElementById('inp-nome').classList.remove('err');});
+document.getElementById('inp-estado').addEventListener('input',()=>{document.getElementById('inp-estado').classList.remove('err');});
+
+/* ══════════════════════════════════════════
+   NAVEGAÇÃO
+══════════════════════════════════════════ */
+function mostrarBloco(n){
+  document.querySelectorAll('.block').forEach(b=>b.classList.remove('active'));
+  const alvo = n===0?'bloco-ident':n==='fim'?'bloco-fim':'bloco-'+n;
+  document.getElementById(alvo).classList.add('active');
+  blocoAtual = typeof n==='number'?n:0;
+  if(n>0 && n<=5){
+    setIdentBar(n);
+    atualizarSidebar(n);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function voltar(bloco){ mostrarBloco(bloco-1); }
+
+/* ══════════════════════════════════════════
+   SELEÇÃO DE RADIO / MODELO
+══════════════════════════════════════════ */
+const MODELS = {chile:'mc-chile',canada:'mc-canada',mexico:'mc-mexico',uk:'mc-uk',niteroi:'mc-niteroi'};
+function selModel(key){
+  Object.values(MODELS).forEach(id=>document.getElementById(id).classList.remove('sel'));
+  document.getElementById(MODELS[key]).classList.add('sel');
+  const vals = {chile:'Chile',canada:'Canadá',mexico:'México',uk:'Reino Unido',niteroi:'Niterói (SIMAGI)'};
+  radios['q1_modelo'] = vals[key];
+}
+
+const RADIO_GROUPS = {
+  'q2_coord':['ro-c','ro-d','ro-h'],
+  'q4b_comite':['ro-4b-s','ro-4b-n','ro-4b-ns'],
+  'q4c_obrig':['ro-4c-s','ro-4c-n','ro-4c-ns'],
+};
+function selRadio(grupo, valor, activeId){
+  const ids = RADIO_GROUPS[grupo];
+  if(ids) ids.forEach(id=>document.getElementById(id)?.classList.remove('sel'));
+  document.getElementById(activeId)?.classList.add('sel');
+  radios[grupo] = valor;
+}
+
+/* ══════════════════════════════════════════
+   VALIDAÇÃO
+══════════════════════════════════════════ */
+function valBloco(n){
+  const erros = [];
+  const ta = id=>{const el=document.getElementById(id);const v=el?el.value.trim():'';if(v){el.classList.remove('err');}else{el?.classList.add('err');}return v;};
+
+  if(n===1){
+    if(!radios['q1_modelo']) erros.push('Pergunta 1: selecione o modelo de referência');
+    if(!ta('q1a')) erros.push('1.1 — descreva a capacidade técnica do sistema de M&A');
+    if(!ta('q1b')) erros.push('1.2 — descreva a cultura de M&A em três palavras');
+    if(!ta('q1c')) erros.push('1.3 — descreva os fluxos de avaliação');
+    if(!ta('q1d')) erros.push('1.4 — descreva a conexão com o orçamento');
+  }
+  if(n===2){
+    if(!radios['q2_coord']) erros.push('Pergunta 2: selecione uma opção de coordenação');
+    if(!ta('q2a')) erros.push('2.1 — descreva a relação entre centro de governo e secretarias');
+  }
+  if(n===3){
+    if(!ta('q3a')) erros.push('3.1 — identifique quem tem a "caneta" e quem executa operacionalmente');
+    if(!ta('q3b')) erros.push('3.2 — indique se essas estruturas existem ou precisam ser criadas');
+  }
+  if(n===4){
+    if(!ta('q4a')) erros.push('4.1 — descreva as principais instâncias de direção, coordenação e execução');
+    if(!radios['q4b_comite']) erros.push('4.2 — indique se existe comitê/fórum interinstitucional');
+    else if(!ta('q4b_det')) erros.push('4.2 — descreva brevemente o comitê/fórum');
+    if(!radios['q4c_obrig']) erros.push('4.3 — indique se haverá obrigação de resposta às recomendações');
+    if(!ta('q4d')) erros.push('4.4 — descreva como será monitorado o uso das evidências');
+  }
+  if(n===5){
+    if(!ta('q5a')) erros.push('5.1 — descreva as estratégias de clareza de atribuições e incentivos');
+  }
+  return erros;
+}
+
+function mostrarErros(n, erros){
+  const v = document.getElementById('val-'+n);
+  if(!erros.length){ v.classList.remove('show'); return; }
+  v.classList.add('show');
+  v.innerHTML = `<strong>⚠ ${erros.length === 1 ? 'Campo não preenchido' : erros.length+' campos não preenchidos'} — por favor complete antes de avançar:</strong><ul style="margin-top:.4rem;padding-left:1.1rem">${erros.map(e=>`<li style="margin-top:.2rem">${e}</li>`).join('')}</ul>`;
+  v.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function avancar(n){
+  const erros = valBloco(n);
+  if(erros.length){ mostrarErros(n, erros); return; }
+  document.getElementById('val-'+n)?.classList.remove('show');
+  if(n < 5) mostrarBloco(n+1);
+}
+
+/* ══════════════════════════════════════════
+   SUBMISSÃO
+══════════════════════════════════════════ */
+function coletarRespostas(){
+  return {
+    nome,
+    estado,
+    q1_modelo: radios['q1_modelo']||'',
+    q1a: document.getElementById('q1a').value.trim(),
+    q1b: document.getElementById('q1b').value.trim(),
+    q1c: document.getElementById('q1c').value.trim(),
+    q1d: document.getElementById('q1d').value.trim(),
+    q2_coord: radios['q2_coord']||'',
+    q2a: document.getElementById('q2a').value.trim(),
+    q3a: document.getElementById('q3a').value.trim(),
+    q3b: document.getElementById('q3b').value.trim(),
+    q4a: document.getElementById('q4a').value.trim(),
+    q4b_comite: radios['q4b_comite']||'',
+    q4b_det: document.getElementById('q4b_det').value.trim(),
+    q4c_obrig: radios['q4c_obrig']||'',
+    q4d: document.getElementById('q4d').value.trim(),
+    q5a: document.getElementById('q5a').value.trim(),
+    ts: Date.now()
+  };
+}
+
+async function submeter(){
+  const erros = valBloco(5);
+  if(erros.length){ mostrarErros(5, erros); return; }
+  mostrarBloco('fim');
+  const payload = coletarRespostas();
+  const el = document.getElementById('send-status');
+
+  // 1. Guardar no Supabase
+  let guardado = false;
+  try{
+    const r = await fetch(`${SB_URL}/rest/v1/gtma_respostas`,{
+      method:'POST',
+      headers:{...HDRS,'Prefer':'return=minimal'},
+      body:JSON.stringify(payload)
+    });
+    if(r.ok){
+      guardado = true;
+      el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada! A gerar o seu roadmap...</span>';
+    } else {
+      throw new Error('HTTP '+r.status);
+    }
+  } catch(e){
+    el.innerHTML = `<span style="font-size:20px;color:var(--orange)">⚠</span><span style="color:var(--orange);font-weight:600">Atenção: não foi possível registrar automaticamente. Por favor, acesse o questionário pelo link do SharePoint (não abra o ficheiro diretamente do computador) e tente novamente. Se o problema persistir, informe ao facilitador: <strong>${nome} — ${estado}</strong>.</span>`;
+  }
+
+  // 2. Gerar roadmap via Supabase Edge Function
+  if(guardado) await gerarRoadmap(payload);
+}
+
+function imprimirRoadmap(){
+  const conteudo = document.getElementById('roadmap-content').innerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Roadmap de Governança — ${nome} — ${estado}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Inter',sans-serif;background:#fff;color:#1a2533}
+      @media print{@page{margin:12mm;size:A4}}
+    </style>
+    </head><body>${conteudo}</body></html>`);
+  win.document.close();
+  setTimeout(()=>{ win.focus(); win.print(); }, 600);
+}
+
+async function gerarRoadmap(p){
+  const wrap = document.getElementById('roadmap-wrap');
+  const box  = document.getElementById('roadmap-content');
+  const el   = document.getElementById('send-status');
+  wrap.style.display = 'block';
+  box.innerHTML = '<div style="padding:2.5rem;text-align:center;color:#6B7280"><div style="width:28px;height:28px;border:2px solid rgba(92,214,199,.2);border-top-color:#5CD6C7;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .75rem"></div>A analisar as suas respostas e a construir o canvas de governança...</div>';
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+
+  const prompt = `Você é um especialista em sistemas de monitoramento e avaliação (M&A) de políticas públicas, com foco em governança institucional. Com base nas respostas abaixo de um(a) gestor(a) do estado de ${p.estado}, gere um canvas de governança em HTML puro (sem markdown, sem blocos de código, apenas HTML direto).
+
+RESPOSTAS DO GESTOR:
+- Modelo de referência internacional mais próximo: ${p.q1_modelo}
+- Capacidade técnica do sistema M&A: ${p.q1a}
+- Cultura de M&A (3 palavras): ${p.q1b}
+- Fluxos de avaliação: ${p.q1c}
+- Conexão com orçamento: ${p.q1d}
+- Opção de coordenação: ${p.q2_coord}
+- Relação centro de governo e secretarias: ${p.q2a}
+- Quem tem a caneta e quem executa: ${p.q3a}
+- Estruturas existem ou precisam ser criadas: ${p.q3b}
+- Instâncias de direção/coordenação/execução: ${p.q4a}
+- Comitê interinstitucional: ${p.q4b_comite} — ${p.q4b_det}
+- Obrigação de resposta às recomendações: ${p.q4c_obrig}
+- Monitoramento do uso de evidências: ${p.q4d}
+- Estratégias de clareza de atribuições e incentivos: ${p.q5a}
+
+ESTRUTURA OBRIGATÓRIA DO CANVAS (formato visual, não texto corrido, optimizado para A4):
+Gere HTML completo usando cores #942DD4 roxo, #5CD6C7 turquesa, #F77333 laranja, fundo branco, tipografia Inter.
+
+Inclua obrigatoriamente estas 6 secções:
+
+1. CABEÇALHO com título Canvas de Governança de M&A, nome ${p.nome}, estado ${p.estado}, data de hoje
+
+2. FOTOGRAFIA DO SISTEMA — faixa horizontal com 4 caixas coloridas:
+   - Modelo de referência (${p.q1_modelo}) com bandeira emoji do país
+   - Coordenação preferida (${p.q2_coord})
+   - Maturidade institucional: avalie como Inicial, Em desenvolvimento ou Estabelecido com base nas respostas
+   - Cultura M&A: as 3 palavras de ${p.q1b}
+
+3. DIAGNÓSTICO DOS 4 ATRIBUTOS — grid 2x2, cada célula com estrelas 1-5 e 1 frase diagnóstica:
+   - Institucionalizada (apoiada em estruturas formais)
+   - Estratégica (conectada às prioridades de governo)
+   - Tempestiva (chega a tempo de informar decisões)
+   - Sustentada (mantida além de uma gestão)
+
+4. ARQUITETURA DE GOVERNANÇA — organograma vertical com 3 níveis ligados por setas:
+   - Nível Estratégico: quem decide
+   - Nível Tático: coordenação técnica
+   - Nível Operacional: execução
+
+5. ROADMAP DE PRIMEIROS PASSOS — 3 colunas lado a lado:
+   - Imediato (0–3 meses): 2-3 ações
+   - Curto prazo (3–12 meses): 2-3 ações
+   - Médio prazo (1–2 anos): 2-3 ações
+   Todas as ações deduzidas concretamente das respostas do gestor.
+
+6. PONTOS DE ATENÇÃO — 3 caixas laranja com riscos identificados nas respostas
+
+Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, compacto para A4, visual profissional. Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-calls':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:4000,
+        messages:[{role:'user', content: prompt}]
+      })
+    });
+
+    const data = await resp.json();
+    const html = data.content?.find(b=>b.type==='text')?.text || '';
+
+    if(html.trim().startsWith('<')){
+      box.innerHTML = html;
+      el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada e roadmap gerado com sucesso!</span>';
+      // Guardar roadmap_html no Supabase para consulta futura
+      try{
+        await fetch(`${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&order=ts.desc&limit=1`,{
+          method:'PATCH',
+          headers:{...HDRS,'Prefer':'return=minimal'},
+          body: JSON.stringify({roadmap_html: html})
+        });
+      } catch(e2){ console.warn('Roadmap save error:', e2); }
+    } else {
+      throw new Error('HTML inválido: '+html.substring(0,100));
+    }
+  } catch(e){
+    box.innerHTML = '<div style="padding:2rem;text-align:center;color:#E63946;font-size:14px">Não foi possível gerar o roadmap automaticamente. O facilitador elaborará o canvas com base nas suas respostas e enviará em breve.</div>';
+    el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada com sucesso!</span>';
+    console.error('Roadmap error:', e);
+  }
+}
+
+/* ══════════════════════════════════════════
+   PAINEL FACILITADOR
+══════════════════════════════════════════ */
+const Q_LABELS = {
+  q1_modelo:'Modelo de referência',
+  q1a:'Capacidade técnica',
+  q1b:'Cultura de M&A (3 palavras)',
+  q1c:'Fluxos de avaliação',
+  q1d:'Conexão com orçamento',
+  q2_coord:'Opção de coordenação',
+  q2a:'Relação centro ↔ secretarias',
+  q3a:'Quem tem a "caneta"',
+  q3b:'Estruturas existem ou precisam ser criadas?',
+  q4a:'Instâncias de direção/coordenação/execução',
+  q4b_comite:'Comitê interinstitucional',
+  q4b_det:'Detalhes do comitê',
+  q4c_obrig:'Obrigação de resposta às recomendações',
+  q4d:'Monitoramento do uso de evidências',
+  q5a:'Estratégias de clareza e incentivos',
+};
+
+const BLOCOS_LABELS = [
+  {titulo:'Bloco 1 · Modelo de Referência', campos:['q1_modelo','q1a','q1b','q1c','q1d']},
+  {titulo:'Bloco 2 · Coordenação', campos:['q2_coord','q2a']},
+  {titulo:'Bloco 3 · Atores e Papéis', campos:['q3a','q3b']},
+  {titulo:'Bloco 4 · Arranjo Mínimo Viável', campos:['q4a','q4b_comite','q4b_det','q4c_obrig','q4d']},
+  {titulo:'Bloco 5 · Participação e Atribuições', campos:['q5a']},
+];
+
+let pollingInterval = null;
+let ultimoTotal = -1;
+
+async function carregarRespostas(silencioso=false){
+  if(!silencioso) document.getElementById('resp-list').innerHTML = '<div class="empty-state"><div class="esp"></div>A carregar respostas...</div>';
+  try{
+    const r = await fetch(`${SB_URL}/rest/v1/gtma_respostas?select=*&order=ts.desc`,{headers:HDRS});
+    const d = await r.json();
+    if(Array.isArray(d)){
+      const abertos = silencioso ? [...document.querySelectorAll('.resp-card.open')].map(el=>el.id) : [];
+      respostas_cache = d;
+      atualizarStats(d);
+      if(!silencioso || d.length !== ultimoTotal){
+        filtrar();
+        ultimoTotal = d.length;
+        if(silencioso) setTimeout(()=>abertos.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('open');}),50);
+      }
+      atualizarIndicadorPolling(true);
+    }
+  } catch(e){
+    if(!silencioso) document.getElementById('resp-list').innerHTML = '<div class="empty-state" style="color:#E63946">Erro ao carregar. Verifique a ligação.</div>';
+    atualizarIndicadorPolling(false);
+  }
+}
+
+function iniciarPolling(){
+  if(pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(()=>carregarRespostas(true), 5000);
+}
+
+function atualizarIndicadorPolling(ok){
+  const dot = document.querySelector('.live-dot');
+  if(dot) dot.style.background = ok ? '#5CD6C7' : '#E63946';
+  if(dot) dot.style.boxShadow = ok ? '0 0 6px #5CD6C7' : '0 0 6px #E63946';
+}
+
+function atualizarStats(d){
+  document.getElementById('st-total').textContent = d.length;
+  const estados = [...new Set(d.map(x=>x.estado).filter(Boolean))];
+  document.getElementById('st-estados').textContent = estados.length || '—';
+  document.getElementById('st-estados').style.color='#5CD6C7';
+  // modelo mais citado
+  const mc = {};
+  d.forEach(x=>{if(x.q1_modelo)mc[x.q1_modelo]=(mc[x.q1_modelo]||0)+1;});
+  const topM = Object.entries(mc).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('st-modelo').textContent = topM ? topM[0].split(' ')[0] : '—';
+  // coord mais citada
+  const cc = {};
+  d.forEach(x=>{if(x.q2_coord)cc[x.q2_coord]=(cc[x.q2_coord]||0)+1;});
+  const topC = Object.entries(cc).sort((a,b)=>b[1]-a[1])[0];
+  const coordMap = {'Centralizar':'Central','Distribuir com diretrizes centrais':'Distribuída','Modelo híbrido':'Híbrida'};
+  document.getElementById('st-coord').textContent = topC ? (coordMap[topC[0]]||topC[0]) : '—';
+}
+
+function ts2str(ts){
+  if(!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+// Map to store roadmap_html per card index
+const roadmapCache = {};
+
+function renderRespostas(d){
+  const lista = document.getElementById('resp-list');
+  document.getElementById('count-badge').textContent = d.length+' resultado'+(d.length!==1?'s':'');
+  if(!d.length){lista.innerHTML='<div class="empty-state"><div class="esp"></div>Nenhuma resposta recebida ainda.</div>';return;}
+  // Store roadmap htmls
+  d.forEach((p,i)=>{ if(p.roadmap_html) roadmapCache[i] = {html:p.roadmap_html, nome:p.nome, estado:p.estado}; });
+  lista.innerHTML = d.map((p,i)=>`
+    <div class="resp-card" id="rcard-${i}">
+      <div class="resp-head" onclick="toggleCard(${i})">
+        <div class="resp-meta">
+          <span class="resp-name">${esc(p.nome||'—')}</span>
+          <span class="resp-estado">${esc(p.estado||'—')}</span>
+          <span class="resp-ts">${ts2str(p.ts)}</span>
+          ${p.q1_modelo?`<span class="resp-modelo">• ${esc(p.q1_modelo)}</span>`:''}
+          ${p.roadmap_html?`<span onclick="event.stopPropagation();baixarCanvasFac('${i}',\`${p.nome}\`,\`${p.estado}\`)" style="background:rgba(148,45,212,.2);color:#c084fc;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(148,45,212,.3)">⬇ Canvas PDF</span>`:'<span style="font-size:11px;color:rgba(255,255,255,.2)">sem canvas</span>'}
+        </div>
+        <div class="resp-toggle">▾</div>
+      </div>
+      <div class="resp-body">
+        ${BLOCOS_LABELS.map(b=>`
+          <div class="q-block">
+            <div class="q-block-title">${b.titulo}</div>
+            ${b.campos.map(c=>`
+              <div class="q-item">
+                <div class="q-item-label">${Q_LABELS[c]||c}</div>
+                <div class="q-item-val">${esc(p[c]||'—')}</div>
+              </div>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function toggleCard(i){
+  const c = document.getElementById('rcard-'+i);
+  c.classList.toggle('open');
+}
+
+function filtrar(){
+  const busca = document.getElementById('f-busca').value.toLowerCase();
+  const modelo = document.getElementById('f-modelo').value;
+  const coord = document.getElementById('f-coord').value;
+  const filtrado = respostas_cache.filter(p=>{
+    const matchBusca = !busca || (p.nome||'').toLowerCase().includes(busca) || (p.estado||'').toLowerCase().includes(busca);
+    const matchModelo = !modelo || p.q1_modelo === modelo;
+    const matchCoord = !coord || p.q2_coord === coord;
+    return matchBusca && matchModelo && matchCoord;
+  });
+  renderRespostas(filtrado);
+}
+
+function baixarCanvasFac(idx, nome, estado){
+  const entry = roadmapCache[idx];
+  if(!entry){ alert('Canvas não disponível para este participante.'); return; }
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Canvas de Governança — ${entry.nome} — ${entry.estado}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap">
+    <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:#fff;color:#1a2533}@media print{@page{margin:12mm;size:A4}}</style>
+    </head><body>${entry.html}</body></html>`);
+  win.document.close();
+  setTimeout(()=>{ win.focus(); win.print(); }, 600);
+}
+
+function exportarCSV(){
+  if(!respostas_cache.length){alert('Sem dados para exportar.');return;}
+  const cols = ['nome','estado','q1_modelo','q1a','q1b','q1c','q1d','q2_coord','q2a','q3a','q3b','q4a','q4b_comite','q4b_det','q4c_obrig','q4d','q5a','ts'];
+  const header = cols.join(',');
+  const rows = respostas_cache.map(p=>cols.map(c=>{
+    const v = c==='ts'?ts2str(p[c]):(p[c]||'');
+    return '"'+String(v).replace(/"/g,'""')+'"';
+  }).join(','));
+  const csv = [header,...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='gtma_respostas.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
