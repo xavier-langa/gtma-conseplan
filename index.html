@@ -244,6 +244,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .painel-stats{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -924,19 +925,25 @@ async function submeter(){
 }
 
 function imprimirRoadmap(){
-  const conteudo = document.getElementById('roadmap-content').innerHTML;
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Roadmap de Governança — ${nome} — ${estado}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap">
-    <style>
-      *{box-sizing:border-box;margin:0;padding:0}
-      body{font-family:'Inter',sans-serif;background:#fff;color:#1a2533}
-      @media print{@page{margin:12mm;size:A4}}
-    </style>
-    </head><body>${conteudo}</body></html>`);
-  win.document.close();
-  setTimeout(()=>{ win.focus(); win.print(); }, 600);
+  const el = document.getElementById('roadmap-content');
+  const btn = document.querySelector('[onclick="imprimirRoadmap()"]');
+  if(btn){ btn.innerHTML='⏳ A gerar PDF...'; btn.disabled=true; }
+
+  const opt = {
+    margin:[8,8,8,8],
+    filename:`Canvas_Governanca_${nome}_${estado}.pdf`,
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['avoid-all','css','legacy']}
+  };
+
+  html2pdf().set(opt).from(el).save().then(()=>{
+    if(btn){ btn.innerHTML='⬇ Baixar PDF'; btn.disabled=false; }
+  }).catch(e=>{
+    if(btn){ btn.innerHTML='⬇ Baixar PDF'; btn.disabled=false; }
+    console.error('PDF error:',e);
+  });
 }
 
 async function gerarRoadmap(p){
@@ -997,7 +1004,7 @@ Inclua obrigatoriamente estas 6 secções:
 
 6. PONTOS DE ATENÇÃO — 3 caixas laranja com riscos identificados nas respostas
 
-Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, compacto para A4, visual profissional. Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
+Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, compacto para A4, visual profissional. OBRIGATÓRIO: inclua no início do div um elemento <style> com a regra: *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important} para garantir que as cores aparecem ao imprimir em PDF. Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
 
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1186,14 +1193,27 @@ function filtrar(){
 function baixarCanvasFac(idx, nome, estado){
   const entry = roadmapCache[idx];
   if(!entry){ alert('Canvas não disponível para este participante.'); return; }
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Canvas de Governança — ${entry.nome} — ${entry.estado}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap">
-    <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:#fff;color:#1a2533}@media print{@page{margin:12mm;size:A4}}</style>
-    </head><body>${entry.html}</body></html>`);
-  win.document.close();
-  setTimeout(()=>{ win.focus(); win.print(); }, 600);
+
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;padding:8px';
+  tempDiv.innerHTML = entry.html;
+  document.body.appendChild(tempDiv);
+
+  const opt = {
+    margin:[8,8,8,8],
+    filename:`Canvas_Governanca_${entry.nome}_${entry.estado}.pdf`,
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['avoid-all','css','legacy']}
+  };
+
+  html2pdf().set(opt).from(tempDiv).save().then(()=>{
+    document.body.removeChild(tempDiv);
+  }).catch(e=>{
+    document.body.removeChild(tempDiv);
+    console.error('PDF fac error:',e);
+  });
 }
 
 function exportarCSV(){
