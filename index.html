@@ -1016,9 +1016,11 @@ Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagen
     });
 
     const data = await resp.json();
-    const html = data.content?.find(b=>b.type==='text')?.text || '';
+    const rawHtml = data.content?.find(b=>b.type==='text')?.text || '';
+    // Remover backticks de markdown caso o modelo os inclua
+    const html = rawHtml.replace(/^```html\s*/i,'').replace(/^```\s*/,'').replace(/\s*```\s*$/,'').trim();
 
-    if(html.trim().startsWith('<')){
+    if(html.startsWith('<')){
       box.innerHTML = html;
       el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada e roadmap gerado com sucesso!</span>';
       // Guardar roadmap_html no Supabase para consulta futura
