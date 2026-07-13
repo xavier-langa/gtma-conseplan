@@ -975,34 +975,38 @@ RESPOSTAS DO GESTOR:
 ESTRUTURA OBRIGATÓRIA DO CANVAS (formato visual, não texto corrido, optimizado para A4):
 Gere HTML completo usando cores #942DD4 roxo, #5CD6C7 turquesa, #F77333 laranja, fundo branco, tipografia Inter.
 
-Inclua obrigatoriamente estas 6 secções:
+Inclua obrigatoriamente estas 6 secções, pela ordem indicada:
 
-1. CABEÇALHO com título Canvas de Governança de M&A, nome ${p.nome}, estado ${p.estado}, data de hoje
+0. AVISO LEGAL — antes de tudo, em fonte pequena (11px), cor cinza (#6B7280), fundo #F4F7FA, padding 10px, borda-radius 6px, margin-bottom 16px:
+   Texto exacto: "Este canvas foi gerado automaticamente a partir da sistematização das respostas fornecidas por representantes de secretarias estaduais durante a atividade do GT de Monitoramento e Avaliação do Conseplan (16/07/2026). O material tem finalidade exclusivamente didática e de apoio ao debate, não constituindo diagnóstico, avaliação técnica, recomendação institucional ou documento oficial."
+
+1. CABEÇALHO com título "Canvas de Governança de M&A", nome ${p.nome}, estado ${p.estado}, data de hoje
 
 2. FOTOGRAFIA DO SISTEMA — faixa horizontal com 4 caixas coloridas:
-   - Modelo de referência (${p.q1_modelo}) com bandeira emoji do país
+   - "Experiência inspiradora" (NÃO usar "Modelo de referência") com o valor ${p.q1_modelo} e bandeira emoji do país
    - Coordenação preferida (${p.q2_coord})
    - Maturidade institucional: avalie como Inicial, Em desenvolvimento ou Estabelecido com base nas respostas
    - Cultura M&A: as 3 palavras de ${p.q1b}
 
-3. DIAGNÓSTICO DOS 4 ATRIBUTOS — grid 2x2, cada célula com estrelas 1-5 e 1 frase diagnóstica:
+3. DIAGNÓSTICO DOS 4 ATRIBUTOS — grid 2x2, cada célula com APENAS 1 frase descritiva (SEM estrelas, SEM classificação numérica, SEM avaliação):
    - Institucionalizada (apoiada em estruturas formais)
    - Estratégica (conectada às prioridades de governo)
    - Tempestiva (chega a tempo de informar decisões)
    - Sustentada (mantida além de uma gestão)
+   O texto de cada célula deve ser descritivo e baseado nas respostas, sem julgamento de valor.
 
-4. ARQUITETURA DE GOVERNANÇA — organograma vertical com 3 níveis ligados por setas:
+4. ARQUITETURA DE GOVERNANÇA — subtítulo obrigatório: "Como atualmente está configurada a arquitetura de governança de monitoramento e avaliação". Organograma vertical com 3 níveis ligados por setas:
    - Nível Estratégico: quem decide
    - Nível Tático: coordenação técnica
    - Nível Operacional: execução
 
-5. ROADMAP DE PRIMEIROS PASSOS — 3 colunas lado a lado:
-   - Imediato (0–3 meses): 2-3 ações
-   - Curto prazo (3–12 meses): 2-3 ações
-   - Médio prazo (1–2 anos): 2-3 ações
-   Todas as ações deduzidas concretamente das respostas do gestor.
+5. SUGESTÕES DE PRÓXIMOS PASSOS — título obrigatório: "Sugestões de ações para os próximos passos". Subtítulo obrigatório em itálico: "Leia as sugestões abaixo, reflita sobre sua aderência à realidade do seu estado e discuta-as com a equipe da sua secretaria. Utilize este material como um ponto de partida para o debate, e não como uma recomendação técnica ou plano de ação oficial." Depois, 3 colunas lado a lado:
+   - Imediato (0–3 meses): 2-3 sugestões
+   - Curto prazo (3–12 meses): 2-3 sugestões
+   - Médio prazo (1–2 anos): 2-3 sugestões
+   Todas as sugestões deduzidas das respostas do gestor, com tom propositivo e construtivo.
 
-6. PONTOS DE ATENÇÃO — 3 caixas laranja com riscos identificados nas respostas
+6. PONTOS PARA ATENÇÃO E DEBATE — título obrigatório: "Pontos para atenção e debate". 3 caixas (turquesa #5CD6C7, NÃO laranja). Cada caixa deve ter: um tema identificado nas respostas, e 1-2 perguntas disparadoras de reflexão e debate em equipe (ex: "Como a nossa equipe poderia...?", "O que precisaríamos para...?"). Tom: reflexivo, construtivo, sem julgamento. NÃO listar problemas ou riscos — listar temas para pensar juntos.
 
 Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, compacto para A4, visual profissional. OBRIGATÓRIO: inclua no início do div um elemento <style> com a regra: *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important} para garantir que as cores aparecem ao imprimir em PDF. Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
 
