@@ -503,12 +503,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
             <div class="r-dot"></div>
             <span class="r-label">Sim, já existe</span>
           </label>
-          <label class="r-opt" id="ro-4b-n" onclick="selRadio('q4b_comite','Não','ro-4b-n');document.getElementById('q4b_det_wrap').style.display='block'">
+          <label class="r-opt" id="ro-4b-n" onclick="selRadio('q4b_comite','Não','ro-4b-n');document.getElementById('q4b_det_wrap').style.display='none';document.getElementById('q4b_det').value=''">
             <input type="radio" name="q4b_comite" value="Não">
             <div class="r-dot"></div>
             <span class="r-label">Não ainda, mas poderia ser proposto</span>
           </label>
-          <label class="r-opt" id="ro-4b-ns" onclick="selRadio('q4b_comite','Não sei','ro-4b-ns');document.getElementById('q4b_det_wrap').style.display='block'">
+          <label class="r-opt" id="ro-4b-ns" onclick="selRadio('q4b_comite','Não sei','ro-4b-ns');document.getElementById('q4b_det_wrap').style.display='none';document.getElementById('q4b_det').value=''">
             <input type="radio" name="q4b_comite" value="Não sei">
             <div class="r-dot"></div>
             <span class="r-label">Não sei / Não se aplica</span>
@@ -844,7 +844,7 @@ function valBloco(n){
   if(n===4){
     if(!ta('q4a')) erros.push('4.1 — descreva as principais instâncias de direção, coordenação e execução');
     if(!radios['q4b_comite']) erros.push('4.2 — indique se existe comitê/fórum interinstitucional');
-    else if(!ta('q4b_det')) erros.push('4.2 — descreva brevemente o comitê/fórum');
+    else if(radios['q4b_comite']==='Sim' && !ta('q4b_det')) erros.push('4.2 — descreva brevemente o comitê/fórum');
     if(!radios['q4c_obrig']) erros.push('4.3 — indique se haverá obrigação de resposta às recomendações');
     if(!ta('q4d')) erros.push('4.4 — descreva como será monitorado o uso das evidências');
   }
@@ -1173,17 +1173,31 @@ Este canvas foi gerado automaticamente a partir da sistematização das resposta
       el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada e roadmap gerado com sucesso!</span>';
       // Guardar roadmap_html no Supabase para consulta futura
       try{
+        // Guardar com retry — tenta 3 vezes com 2 segundos de intervalo
         const patchUrl = p._id
           ? `${SB_URL}/rest/v1/gtma_respostas?id=eq.${p._id}`
           : `${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&order=ts.desc&limit=1`;
-        console.log('PATCH URL:', patchUrl);
-        const pr = await fetch(patchUrl,{
-          method:'PATCH',
-          headers:{...HDRS,'Prefer':'return=representation'},
-          body: JSON.stringify({roadmap_html: html})
-        });
-        const patchResult = await pr.json();
-        console.log('PATCH result:', pr.status, JSON.stringify(patchResult));
+        
+        const tentarPatch = async (tentativa) => {
+          try {
+            const pr = await fetch(patchUrl, {
+              method:'PATCH',
+              headers:{...HDRS,'Prefer':'return=minimal'},
+              body: JSON.stringify({roadmap_html: html})
+            });
+            if(pr.ok){
+              console.log('Roadmap guardado com sucesso na tentativa', tentativa);
+            } else {
+              const t = await pr.text();
+              console.warn('PATCH falhou tentativa', tentativa, pr.status, t);
+              if(tentativa < 3) setTimeout(()=>tentarPatch(tentativa+1), 2000);
+            }
+          } catch(e) {
+            console.warn('PATCH erro tentativa', tentativa, e);
+            if(tentativa < 3) setTimeout(()=>tentarPatch(tentativa+1), 2000);
+          }
+        };
+        setTimeout(()=>tentarPatch(1), 500);
       } catch(e2){ console.warn('Roadmap save error:', e2); }
     } else {
       throw new Error('HTML inválido: '+html.substring(0,100));
@@ -1226,6 +1240,7 @@ const BLOCOS_LABELS = [
 
 let pollingInterval = null;
 let ultimoTotal = -1;
+let ultimoCanvasCount = -1;
 
 async function carregarRespostas(silencioso=false){
   if(!silencioso) document.getElementById('resp-list').innerHTML = '<div class="empty-state"><div class="esp"></div>A carregar respostas...</div>';
@@ -1236,9 +1251,11 @@ async function carregarRespostas(silencioso=false){
       const abertos = silencioso ? [...document.querySelectorAll('.resp-card.open')].map(el=>el.id) : [];
       respostas_cache = d;
       atualizarStats(d);
-      if(!silencioso || d.length !== ultimoTotal){
+      const canvasCount = d.filter(x=>x.roadmap_html).length;
+      if(!silencioso || d.length !== ultimoTotal || canvasCount !== ultimoCanvasCount){
         filtrar();
         ultimoTotal = d.length;
+        ultimoCanvasCount = canvasCount;
         if(silencioso) setTimeout(()=>abertos.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('open');}),50);
       }
       atualizarIndicadorPolling(true);
