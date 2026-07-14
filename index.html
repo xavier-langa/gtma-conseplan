@@ -907,10 +907,12 @@ async function submeter(){
   try{
     const r = await fetch(`${SB_URL}/rest/v1/gtma_respostas`,{
       method:'POST',
-      headers:{...HDRS,'Prefer':'return=minimal'},
+      headers:{...HDRS,'Prefer':'return=representation'},
       body:JSON.stringify(payload)
     });
     if(r.ok){
+      const rows = await r.json();
+      if(rows && rows[0] && rows[0].id) payload._id = rows[0].id;
       guardado = true;
       el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada! A gerar o seu roadmap...</span>';
     } else {
@@ -1169,7 +1171,10 @@ Este canvas foi gerado automaticamente a partir da sistematização das resposta
       el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada e roadmap gerado com sucesso!</span>';
       // Guardar roadmap_html no Supabase para consulta futura
       try{
-        const pr = await fetch(`${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&ts=eq.${p.ts}`,{
+        const patchUrl = p._id
+          ? `${SB_URL}/rest/v1/gtma_respostas?id=eq.${p._id}`
+          : `${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&order=ts.desc&limit=1`;
+        const pr = await fetch(patchUrl,{
           method:'PATCH',
           headers:{...HDRS,'Prefer':'return=minimal'},
           body: JSON.stringify({roadmap_html: html})
