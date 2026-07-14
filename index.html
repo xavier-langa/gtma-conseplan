@@ -967,65 +967,181 @@ async function gerarRoadmap(p){
   box.innerHTML = '<div style="padding:2.5rem;text-align:center;color:#6B7280"><div style="width:28px;height:28px;border:2px solid rgba(92,214,199,.2);border-top-color:#5CD6C7;border-radius:50%;animation:sp .7s linear infinite;margin:0 auto .75rem"></div>A analisar as suas respostas e a construir o canvas de governança...</div>';
   wrap.scrollIntoView({behavior:'smooth',block:'start'});
 
-  const prompt = `Você é um especialista em sistemas de monitoramento e avaliação (M&A) de políticas públicas, com foco em governança institucional. Com base nas respostas abaixo de um(a) gestor(a) do estado de ${p.estado}, gere um canvas de governança em HTML puro (sem markdown, sem blocos de código, apenas HTML direto).
+  const hoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const prompt = `Você é um especialista em sistemas de M&A de políticas públicas. Preencha o template HTML abaixo com base nas respostas do gestor. NÃO altere nenhum estilo, cor, estrutura ou layout — apenas substitua os PLACEHOLDERS pelo conteúdo correto. Retorne APENAS o HTML completo, sem markdown, sem backticks, sem texto antes ou depois.
 
 RESPOSTAS DO GESTOR:
-- Modelo de referência internacional mais próximo: ${p.q1_modelo}
-- Capacidade técnica do sistema M&A: ${p.q1a}
+- Experiência inspiradora (modelo): ${p.q1_modelo}
+- Capacidade técnica: ${p.q1a}
 - Cultura de M&A (3 palavras): ${p.q1b}
 - Fluxos de avaliação: ${p.q1c}
 - Conexão com orçamento: ${p.q1d}
-- Opção de coordenação: ${p.q2_coord}
-- Relação centro de governo e secretarias: ${p.q2a}
-- Quem tem a caneta e quem executa: ${p.q3a}
+- Coordenação preferida: ${p.q2_coord}
+- Relação centro ↔ secretarias: ${p.q2a}
+- Quem decide e quem executa: ${p.q3a}
 - Estruturas existem ou precisam ser criadas: ${p.q3b}
 - Instâncias de direção/coordenação/execução: ${p.q4a}
 - Comitê interinstitucional: ${p.q4b_comite} — ${p.q4b_det}
 - Obrigação de resposta às recomendações: ${p.q4c_obrig}
 - Monitoramento do uso de evidências: ${p.q4d}
-- Estratégias de clareza de atribuições e incentivos: ${p.q5a}
+- Estratégias de clareza e incentivos: ${p.q5a}
 
-ESTRUTURA OBRIGATÓRIA DO CANVAS (formato visual, não texto corrido, optimizado para A4):
-Gere HTML completo usando cores #942DD4 roxo, #5CD6C7 turquesa, #F77333 laranja, fundo branco, tipografia Inter.
+SUBSTITUA OS PLACEHOLDERS:
+[NOME] = ${p.nome}
+[ESTADO] = ${p.estado}
+[DATA] = ${hoje}
+[EXPERIENCIA_INSPIRADORA] = nome do país/modelo (${p.q1_modelo}) + emoji de bandeira
+[COORDENACAO] = ${p.q2_coord}
+[MATURIDADE] = avalie como "Inicial", "Em Desenvolvimento" ou "Estabelecido" com base nas respostas
+[CULTURA_3_PALAVRAS] = as 3 palavras de "${p.q1b}" separadas por •
+[DIAG_INSTITUCIONALIZADA] = 2-3 frases descritivas sobre institucionalização baseadas nas respostas, sem julgamento
+[DIAG_ESTRATEGICA] = 2-3 frases descritivas sobre dimensão estratégica baseadas nas respostas, sem julgamento
+[DIAG_TEMPESTIVA] = 2-3 frases descritivas sobre tempestividade baseadas nas respostas, sem julgamento
+[DIAG_SUSTENTADA] = 2-3 frases descritivas sobre sustentabilidade baseadas nas respostas, sem julgamento
+[NIVEL_ESTRATEGICO] = quem tem poder de decisão estratégica baseado em "${p.q3a}" e "${p.q4a}"
+[NIVEL_TATICO] = quem faz coordenação técnica baseado nas respostas
+[NIVEL_OPERACIONAL] = quem executa baseado nas respostas
+[IMEDIATO_1] = ação concreta para 0-3 meses baseada nas respostas
+[IMEDIATO_2] = segunda ação concreta para 0-3 meses
+[CURTO_1] = ação concreta para 3-12 meses baseada nas respostas
+[CURTO_2] = segunda ação concreta para 3-12 meses
+[MEDIO_1] = ação concreta para 1-2 anos baseada nas respostas
+[MEDIO_2] = segunda ação concreta para 1-2 anos
+[DEBATE_TEMA_1] = primeiro tema para debate identificado nas respostas
+[DEBATE_PERGUNTA_1A] = pergunta reflexiva sobre tema 1
+[DEBATE_PERGUNTA_1B] = segunda pergunta reflexiva sobre tema 1
+[DEBATE_TEMA_2] = segundo tema para debate
+[DEBATE_PERGUNTA_2A] = pergunta reflexiva sobre tema 2
+[DEBATE_PERGUNTA_2B] = segunda pergunta reflexiva sobre tema 2
+[DEBATE_TEMA_3] = terceiro tema para debate
+[DEBATE_PERGUNTA_3A] = pergunta reflexiva sobre tema 3
+[DEBATE_PERGUNTA_3B] = segunda pergunta reflexiva sobre tema 3
 
-Inclua obrigatoriamente estas 6 secções, pela ordem indicada:
+TEMPLATE HTML (não altere nada excepto os placeholders):
+<div style="font-family:'Inter',sans-serif;background:#fff;color:#1a2533;max-width:794px;margin:0 auto;padding:24px">
+<style>*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}@media print{.pg{page-break-before:always;break-before:page}}</style>
 
-0. AVISO LEGAL — antes de tudo, em fonte pequena (11px), cor cinza (#6B7280), fundo #F4F7FA, padding 10px, borda-radius 6px, margin-bottom 16px:
-   Texto exacto: "Este canvas foi gerado automaticamente a partir da sistematização das respostas fornecidas por representantes de secretarias estaduais durante a atividade do GT de Monitoramento e Avaliação do Conseplan (16/07/2026). O material tem finalidade exclusivamente didática e de apoio ao debate, não constituindo diagnóstico, avaliação técnica, recomendação institucional ou documento oficial."
+<!-- AVISO LEGAL -->
+<div style="background:#F4F7FA;border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#6B7280;line-height:1.6">
+Este canvas foi gerado automaticamente a partir da sistematização das respostas fornecidas por representantes de secretarias estaduais durante a atividade do GT de Monitoramento e Avaliação do Conseplan (16/07/2026). O material tem finalidade exclusivamente didática e de apoio ao debate, não constituindo diagnóstico, avaliação técnica, recomendação institucional ou documento oficial.
+</div>
 
-1. CABEÇALHO com título "Canvas de Governança de M&A", nome ${p.nome}, estado ${p.estado}, data de hoje
+<!-- CABEÇALHO -->
+<h1 style="font-size:32px;font-weight:800;color:#942DD4;margin-bottom:4px">Canvas de Governança de M&A</h1>
+<div style="font-size:13px;color:#6B7280;margin-bottom:4px"><strong style="color:#1a2533">Responsável:</strong> [NOME] &nbsp;|&nbsp; <strong style="color:#1a2533">Estado:</strong> [ESTADO] &nbsp;|&nbsp; <strong style="color:#1a2533">Data:</strong> [DATA]</div>
+<div style="height:3px;background:linear-gradient(90deg,#942DD4,#5CD6C7);border-radius:2px;margin:16px 0 24px"></div>
 
-2. FOTOGRAFIA DO SISTEMA — faixa horizontal com 4 caixas coloridas:
-   - "Experiência inspiradora" (NÃO usar "Modelo de referência") com o valor ${p.q1_modelo} e bandeira emoji do país
-   - Coordenação preferida (${p.q2_coord})
-   - Maturidade institucional: avalie como Inicial, Em desenvolvimento ou Estabelecido com base nas respostas
-   - Cultura M&A: as 3 palavras de ${p.q1b}
+<!-- FOTOGRAFIA DO SISTEMA -->
+<h2 style="font-size:16px;font-weight:700;color:#942DD4;margin-bottom:16px">Fotografia do Sistema</h2>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px">
+  <div style="background:#942DD4;border-radius:12px;padding:16px;color:#fff;text-align:center">
+    <div style="font-size:10px;font-weight:600;opacity:.8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Experiência Inspiradora</div>
+    <div style="font-size:18px;font-weight:800">[EXPERIENCIA_INSPIRADORA]</div>
+  </div>
+  <div style="background:#5CD6C7;border-radius:12px;padding:16px;color:#1a2533;text-align:center">
+    <div style="font-size:10px;font-weight:600;opacity:.7;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Coordenação Preferida</div>
+    <div style="font-size:14px;font-weight:800">[COORDENACAO]</div>
+  </div>
+  <div style="background:#F77333;border-radius:12px;padding:16px;color:#fff;text-align:center">
+    <div style="font-size:10px;font-weight:600;opacity:.8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Maturidade Institucional</div>
+    <div style="font-size:14px;font-weight:800">[MATURIDADE]</div>
+  </div>
+  <div style="background:#1B3A5C;border-radius:12px;padding:16px;color:#fff;text-align:center">
+    <div style="font-size:10px;font-weight:600;opacity:.8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Cultura M&A</div>
+    <div style="font-size:14px;font-weight:700">[CULTURA_3_PALAVRAS]</div>
+  </div>
+</div>
 
-3. DIAGNÓSTICO DOS 4 ATRIBUTOS — grid 2x2, cada célula com APENAS 1 frase descritiva (SEM estrelas, SEM classificação numérica, SEM avaliação):
-   - Institucionalizada (apoiada em estruturas formais)
-   - Estratégica (conectada às prioridades de governo)
-   - Tempestiva (chega a tempo de informar decisões)
-   - Sustentada (mantida além de uma gestão)
-   O texto de cada célula deve ser descritivo e baseado nas respostas, sem julgamento de valor.
+<!-- DIAGNÓSTICO DOS 4 ATRIBUTOS -->
+<h2 style="font-size:16px;font-weight:700;color:#942DD4;margin-bottom:16px">Diagnóstico dos 4 Atributos</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px">
+  <div style="border:2px solid #942DD4;border-radius:12px;padding:16px">
+    <div style="font-size:13px;font-weight:700;color:#942DD4;margin-bottom:8px">Institucionalizada</div>
+    <div style="font-size:13px;color:#374151;line-height:1.6">[DIAG_INSTITUCIONALIZADA]</div>
+  </div>
+  <div style="border:2px solid #5CD6C7;border-radius:12px;padding:16px">
+    <div style="font-size:13px;font-weight:700;color:#3ab8a9;margin-bottom:8px">Estratégica</div>
+    <div style="font-size:13px;color:#374151;line-height:1.6">[DIAG_ESTRATEGICA]</div>
+  </div>
+  <div style="border:2px solid #F77333;border-radius:12px;padding:16px">
+    <div style="font-size:13px;font-weight:700;color:#F77333;margin-bottom:8px">Tempestiva</div>
+    <div style="font-size:13px;color:#374151;line-height:1.6">[DIAG_TEMPESTIVA]</div>
+  </div>
+  <div style="border:2px solid #942DD4;border-radius:12px;padding:16px">
+    <div style="font-size:13px;font-weight:700;color:#942DD4;margin-bottom:8px">Sustentada</div>
+    <div style="font-size:13px;color:#374151;line-height:1.6">[DIAG_SUSTENTADA]</div>
+  </div>
+</div>
 
-4. ARQUITETURA DE GOVERNANÇA — subtítulo obrigatório: "Como atualmente está configurada a arquitetura de governança de monitoramento e avaliação". Organograma vertical com 3 níveis ligados por setas:
-   - Nível Estratégico: quem decide
-   - Nível Tático: coordenação técnica
-   - Nível Operacional: execução
+<!-- ARQUITETURA DE GOVERNANÇA -->
+<div class="pg">
+<h2 style="font-size:16px;font-weight:700;color:#942DD4;margin-bottom:6px">Arquitetura de Governança</h2>
+<div style="font-size:12px;font-style:italic;color:#6B7280;margin-bottom:20px">Como atualmente está configurada a arquitetura de governança de monitoramento e avaliação</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:32px">
+  <div style="background:#942DD4;border-radius:12px;padding:18px 24px;color:#fff;text-align:center;width:80%">
+    <div style="font-size:10px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Nível Estratégico</div>
+    <div style="font-size:15px;font-weight:800">[NIVEL_ESTRATEGICO]</div>
+  </div>
+  <div style="font-size:24px;color:#942DD4;line-height:1.2">↓</div>
+  <div style="background:#5CD6C7;border-radius:12px;padding:18px 24px;color:#1a2533;text-align:center;width:80%">
+    <div style="font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Nível Tático</div>
+    <div style="font-size:15px;font-weight:800">[NIVEL_TATICO]</div>
+  </div>
+  <div style="font-size:24px;color:#5CD6C7;line-height:1.2">↓</div>
+  <div style="background:#F77333;border-radius:12px;padding:18px 24px;color:#fff;text-align:center;width:80%">
+    <div style="font-size:10px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Nível Operacional</div>
+    <div style="font-size:15px;font-weight:800">[NIVEL_OPERACIONAL]</div>
+  </div>
+</div>
+</div>
 
-5. SUGESTÕES DE PRÓXIMOS PASSOS — título obrigatório: "Sugestões de ações para os próximos passos". Subtítulo obrigatório em itálico: "Leia as sugestões abaixo, reflita sobre sua aderência à realidade do seu estado e discuta-as com a equipe da sua secretaria. Utilize este material como um ponto de partida para o debate, e não como uma recomendação técnica ou plano de ação oficial." Depois, 3 colunas lado a lado:
-   - Imediato (0–3 meses): 2-3 sugestões
-   - Curto prazo (3–12 meses): 2-3 sugestões
-   - Médio prazo (1–2 anos): 2-3 sugestões
-   Todas as sugestões deduzidas das respostas do gestor, com tom propositivo e construtivo.
+<!-- SUGESTÕES DE PRÓXIMOS PASSOS -->
+<div class="pg">
+<h2 style="font-size:16px;font-weight:700;color:#942DD4;margin-bottom:6px">Sugestões de Ações para os Próximos Passos</h2>
+<div style="font-size:12px;font-style:italic;color:#6B7280;margin-bottom:20px;line-height:1.6">Leia as sugestões abaixo, reflita sobre sua aderência à realidade do seu estado e discuta-as com a equipe da sua secretaria. Utilize este material como um ponto de partida para o debate, e não como uma recomendação técnica ou plano de ação oficial.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:32px">
+  <div style="border:2px solid #F77333;border-radius:12px;padding:16px">
+    <div style="font-size:11px;font-weight:800;color:#F77333;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Imediato (0–3 meses)</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;border-left:3px solid #F77333;padding-left:8px;margin-bottom:10px">[IMEDIATO_1]</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;border-left:3px solid #F77333;padding-left:8px">[IMEDIATO_2]</div>
+  </div>
+  <div style="border:2px solid #5CD6C7;border-radius:12px;padding:16px">
+    <div style="font-size:11px;font-weight:800;color:#3ab8a9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Curto Prazo (3–12 meses)</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;border-left:3px solid #5CD6C7;padding-left:8px;margin-bottom:10px">[CURTO_1]</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;border-left:3px solid #5CD6C7;padding-left:8px">[CURTO_2]</div>
+  </div>
+  <div style="border:2px solid #942DD4;border-radius:12px;padding:16px">
+    <div style="font-size:11px;font-weight:800;color:#942DD4;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Médio Prazo (1–2 anos)</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;border-left:3px solid #942DD4;padding-left:8px;margin-bottom:10px">[MEDIO_1]</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;border-left:3px solid #942DD4;padding-left:8px">[MEDIO_2]</div>
+  </div>
+</div>
+</div>
 
-6. PONTOS PARA ATENÇÃO E DEBATE — título obrigatório: "Pontos para atenção e debate". 3 caixas (turquesa #5CD6C7, NÃO laranja). Cada caixa deve ter: um tema identificado nas respostas, e 1-2 perguntas disparadoras de reflexão e debate em equipe (ex: "Como a nossa equipe poderia...?", "O que precisaríamos para...?"). Tom: reflexivo, construtivo, sem julgamento. NÃO listar problemas ou riscos — listar temas para pensar juntos.
+<!-- PONTOS PARA ATENÇÃO E DEBATE -->
+<div class="pg">
+<h2 style="font-size:16px;font-weight:700;color:#942DD4;margin-bottom:20px">Pontos para Atenção e Debate</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+  <div style="background:#5CD6C7;border-radius:12px;padding:16px;color:#0e3a4a">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px">[DEBATE_TEMA_1]</div>
+    <div style="font-size:12px;line-height:1.6;margin-bottom:8px">[DEBATE_PERGUNTA_1A]</div>
+    <div style="font-size:12px;line-height:1.6">[DEBATE_PERGUNTA_1B]</div>
+  </div>
+  <div style="background:#5CD6C7;border-radius:12px;padding:16px;color:#0e3a4a">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px">[DEBATE_TEMA_2]</div>
+    <div style="font-size:12px;line-height:1.6;margin-bottom:8px">[DEBATE_PERGUNTA_2A]</div>
+    <div style="font-size:12px;line-height:1.6">[DEBATE_PERGUNTA_2B]</div>
+  </div>
+  <div style="background:#5CD6C7;border-radius:12px;padding:16px;color:#0e3a4a">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px">[DEBATE_TEMA_3]</div>
+    <div style="font-size:12px;line-height:1.6;margin-bottom:8px">[DEBATE_PERGUNTA_3A]</div>
+    <div style="font-size:12px;line-height:1.6">[DEBATE_PERGUNTA_3B]</div>
+  </div>
+</div>
+</div>
 
-Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, visual profissional, tipografia Inter.
-OBRIGATÓRIO no elemento <style> inicial:
-- *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-- Cada uma das secções principais (Fotografia do Sistema, Diagnóstico dos 4 Atributos, Arquitetura de Governança, Sugestões de Próximos Passos, Pontos para Atenção e Debate) deve ter class="page-section" e as secções a partir da Arquitetura de Governança devem ter adicionalmente style="page-break-before:always;break-before:page" para que cada secção comece numa nova página ao imprimir.
-Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
+</div>`;
+
 
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1053,11 +1169,12 @@ Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto ant
       el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada e roadmap gerado com sucesso!</span>';
       // Guardar roadmap_html no Supabase para consulta futura
       try{
-        await fetch(`${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&order=ts.desc&limit=1`,{
+        const pr = await fetch(`${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&ts=eq.${p.ts}`,{
           method:'PATCH',
           headers:{...HDRS,'Prefer':'return=minimal'},
           body: JSON.stringify({roadmap_html: html})
         });
+        if(!pr.ok){ const t=await pr.text(); console.warn('Roadmap PATCH failed:',pr.status,t); }
       } catch(e2){ console.warn('Roadmap save error:', e2); }
     } else {
       throw new Error('HTML inválido: '+html.substring(0,100));
