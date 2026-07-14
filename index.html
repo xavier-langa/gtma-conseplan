@@ -925,25 +925,38 @@ async function submeter(){
 }
 
 function imprimirRoadmap(){
-  const el = document.getElementById('roadmap-content');
-  const btn = document.querySelector('[onclick="imprimirRoadmap()"]');
-  if(btn){ btn.innerHTML='⏳ A gerar PDF...'; btn.disabled=true; }
-
-  const opt = {
-    margin:[8,8,8,8],
-    filename:`Canvas_Governanca_${nome}_${estado}.pdf`,
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:['avoid-all','css','legacy']}
-  };
-
-  html2pdf().set(opt).from(el).save().then(()=>{
-    if(btn){ btn.innerHTML='⬇ Baixar PDF'; btn.disabled=false; }
-  }).catch(e=>{
-    if(btn){ btn.innerHTML='⬇ Baixar PDF'; btn.disabled=false; }
-    console.error('PDF error:',e);
-  });
+  const conteudo = document.getElementById('roadmap-content').innerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Canvas de Governança — ${nome} — ${estado}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Inter',sans-serif;background:#fff;color:#1a2533;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .page-break{page-break-before:always;break-before:page}
+      @media print{
+        @page{margin:12mm;size:A4}
+        *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+        .no-print{display:none}
+      }
+      .print-btn{position:fixed;bottom:24px;right:24px;padding:12px 24px;background:#942DD4;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px rgba(148,45,212,.4);z-index:999}
+      .print-btn:hover{background:#7a22b0}
+    </style>
+    </head><body>
+    <button class="print-btn no-print" onclick="window.print()">⬇ Guardar como PDF</button>
+    ${conteudo}
+    <script>
+      // Instruções ao utilizador
+      window.onload = function(){
+        const msg = document.createElement('div');
+        msg.className = 'no-print';
+        msg.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#942DD4;color:#fff;text-align:center;padding:10px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;z-index:998';
+        msg.innerHTML = 'Para guardar como PDF: clique no botão roxo → seleccione "Guardar como PDF" na impressora → clique Imprimir';
+        document.body.prepend(msg);
+      }
+    <\/script>
+    </body></html>`);
+  win.document.close();
 }
 
 async function gerarRoadmap(p){
@@ -1008,7 +1021,11 @@ Inclua obrigatoriamente estas 6 secções, pela ordem indicada:
 
 6. PONTOS PARA ATENÇÃO E DEBATE — título obrigatório: "Pontos para atenção e debate". 3 caixas (turquesa #5CD6C7, NÃO laranja). Cada caixa deve ter: um tema identificado nas respostas, e 1-2 perguntas disparadoras de reflexão e debate em equipe (ex: "Como a nossa equipe poderia...?", "O que precisaríamos para...?"). Tom: reflexivo, construtivo, sem julgamento. NÃO listar problemas ou riscos — listar temas para pensar juntos.
 
-Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, compacto para A4, visual profissional. OBRIGATÓRIO: inclua no início do div um elemento <style> com a regra: *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important} para garantir que as cores aparecem ao imprimir em PDF. Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
+Requisitos técnicos: layout CSS grid e flexbox, bordas arredondadas, sem imagens externas, visual profissional, tipografia Inter.
+OBRIGATÓRIO no elemento <style> inicial:
+- *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+- Cada uma das secções principais (Fotografia do Sistema, Diagnóstico dos 4 Atributos, Arquitetura de Governança, Sugestões de Próximos Passos, Pontos para Atenção e Debate) deve ter class="page-section" e as secções a partir da Arquitetura de Governança devem ter adicionalmente style="page-break-before:always;break-before:page" para que cada secção comece numa nova página ao imprimir.
+Retorne APENAS o HTML começando com <div e terminando com </div>, sem texto antes ou depois.`;
 
   try{
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1149,7 +1166,7 @@ function renderRespostas(d){
   document.getElementById('count-badge').textContent = d.length+' resultado'+(d.length!==1?'s':'');
   if(!d.length){lista.innerHTML='<div class="empty-state"><div class="esp"></div>Nenhuma resposta recebida ainda.</div>';return;}
   // Store roadmap htmls
-  d.forEach((p,i)=>{ if(p.roadmap_html) roadmapCache[i] = {html:p.roadmap_html, nome:p.nome, estado:p.estado}; });
+  d.forEach((p,i)=>{ if(p.roadmap_html){ const k=`${p.nome}||${p.estado}`; roadmapCache[k]={html:p.roadmap_html,nome:p.nome,estado:p.estado}; roadmapCache[i]={html:p.roadmap_html,nome:p.nome,estado:p.estado}; } });
   lista.innerHTML = d.map((p,i)=>`
     <div class="resp-card" id="rcard-${i}">
       <div class="resp-head" onclick="toggleCard(${i})">
@@ -1158,7 +1175,7 @@ function renderRespostas(d){
           <span class="resp-estado">${esc(p.estado||'—')}</span>
           <span class="resp-ts">${ts2str(p.ts)}</span>
           ${p.q1_modelo?`<span class="resp-modelo">• ${esc(p.q1_modelo)}</span>`:''}
-          ${p.roadmap_html?`<span onclick="event.stopPropagation();baixarCanvasFac('${i}',\`${p.nome}\`,\`${p.estado}\`)" style="background:rgba(148,45,212,.2);color:#c084fc;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(148,45,212,.3)">⬇ Canvas PDF</span>`:'<span style="font-size:11px;color:rgba(255,255,255,.2)">sem canvas</span>'}
+          ${p.roadmap_html?`<span onclick="event.stopPropagation();baixarCanvasFac(${i},'${(p.nome||'').replace(/'/g,"\\'")}','${(p.estado||'').replace(/'/g,"\\'")}');" style="background:rgba(148,45,212,.2);color:#c084fc;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid rgba(148,45,212,.3)">⬇ Canvas PDF</span>`:'<span style="font-size:11px;color:rgba(255,255,255,.2)">sem canvas</span>'}
         </div>
         <div class="resp-toggle">▾</div>
       </div>
@@ -1197,27 +1214,35 @@ function filtrar(){
 function baixarCanvasFac(idx, nome, estado){
   const entry = roadmapCache[idx];
   if(!entry){ alert('Canvas não disponível para este participante.'); return; }
-
-  const tempDiv = document.createElement('div');
-  tempDiv.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;padding:8px';
-  tempDiv.innerHTML = entry.html;
-  document.body.appendChild(tempDiv);
-
-  const opt = {
-    margin:[8,8,8,8],
-    filename:`Canvas_Governanca_${entry.nome}_${entry.estado}.pdf`,
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:['avoid-all','css','legacy']}
-  };
-
-  html2pdf().set(opt).from(tempDiv).save().then(()=>{
-    document.body.removeChild(tempDiv);
-  }).catch(e=>{
-    document.body.removeChild(tempDiv);
-    console.error('PDF fac error:',e);
-  });
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Canvas de Governança — ${entry.nome} — ${entry.estado}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Inter',sans-serif;background:#fff;color:#1a2533;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .page-break{page-break-before:always;break-before:page}
+      @media print{
+        @page{margin:12mm;size:A4}
+        *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+        .no-print{display:none}
+      }
+      .print-btn{position:fixed;bottom:24px;right:24px;padding:12px 24px;background:#942DD4;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 16px rgba(148,45,212,.4);z-index:999}
+    </style>
+    </head><body>
+    <button class="print-btn no-print" onclick="window.print()">⬇ Guardar como PDF</button>
+    ${entry.html}
+    <script>
+      window.onload = function(){
+        const msg = document.createElement('div');
+        msg.className = 'no-print';
+        msg.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#942DD4;color:#fff;text-align:center;padding:10px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;z-index:998';
+        msg.innerHTML = 'Para guardar como PDF: clique no botão roxo → seleccione "Guardar como PDF" na impressora → clique Imprimir';
+        document.body.prepend(msg);
+      }
+    <\/script>
+    </body></html>`);
+  win.document.close();
 }
 
 function exportarCSV(){
