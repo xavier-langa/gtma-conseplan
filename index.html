@@ -912,7 +912,9 @@ async function submeter(){
     });
     if(r.ok){
       const rows = await r.json();
+      console.log('INSERT response rows:', JSON.stringify(rows));
       if(rows && rows[0] && rows[0].id) payload._id = rows[0].id;
+      console.log('payload._id set to:', payload._id);
       guardado = true;
       el.innerHTML = '<span style="font-size:20px;color:var(--teal)">✓</span><span style="color:var(--teal-dark);font-weight:600">Resposta registrada! A gerar o seu roadmap...</span>';
     } else {
@@ -1174,12 +1176,14 @@ Este canvas foi gerado automaticamente a partir da sistematização das resposta
         const patchUrl = p._id
           ? `${SB_URL}/rest/v1/gtma_respostas?id=eq.${p._id}`
           : `${SB_URL}/rest/v1/gtma_respostas?nome=eq.${encodeURIComponent(p.nome)}&estado=eq.${encodeURIComponent(p.estado)}&order=ts.desc&limit=1`;
+        console.log('PATCH URL:', patchUrl);
         const pr = await fetch(patchUrl,{
           method:'PATCH',
-          headers:{...HDRS,'Prefer':'return=minimal'},
+          headers:{...HDRS,'Prefer':'return=representation'},
           body: JSON.stringify({roadmap_html: html})
         });
-        if(!pr.ok){ const t=await pr.text(); console.warn('Roadmap PATCH failed:',pr.status,t); }
+        const patchResult = await pr.json();
+        console.log('PATCH result:', pr.status, JSON.stringify(patchResult));
       } catch(e2){ console.warn('Roadmap save error:', e2); }
     } else {
       throw new Error('HTML inválido: '+html.substring(0,100));
